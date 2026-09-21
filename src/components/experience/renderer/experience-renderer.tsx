@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRendererStore } from '@/stores'
 import { SceneRenderer } from './scene-renderer'
+import { AudioManager } from '../audio'
 import type { ExperienceConfig } from '@/types'
 
 interface ExperienceRendererProps {
@@ -43,6 +44,21 @@ export function ExperienceRenderer({
 
   return (
     <div className="w-full h-full relative bg-zinc-950">
+      {/* Audio Manager */}
+      {config.audio?.url && (
+        <AudioManager
+          config={{
+            url: config.audio.url,
+            volume: config.audio.volume ?? 0.7,
+            loop: config.audio.loop ?? false,
+            fadeIn: config.audio.fadeIn ?? 2000,
+            fadeOut: config.audio.fadeOut ?? 2000,
+          }}
+          isPlaying={isPlaying}
+        />
+      )}
+
+      {/* Scene Renderer */}
       <SceneRenderer
         scene={currentScene}
         isPlaying={isPlaying}
@@ -55,6 +71,7 @@ export function ExperienceRenderer({
           <p>Escena: {currentSceneIndex + 1}/{enabledScenes.length}</p>
           <p>Tipo: {currentScene.sceneType}</p>
           <p>Estado: {isPlaying ? 'Playing' : 'Paused'}</p>
+          {config.audio?.url && <p>Audio: Activado</p>}
         </div>
       )}
     </div>

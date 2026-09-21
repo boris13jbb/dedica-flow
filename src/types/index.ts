@@ -72,6 +72,7 @@ export interface SceneConfig {
 
 export interface AudioConfig {
   assetId?: string
+  url?: string | null
   volume: number
   loop: boolean
   fadeIn: number
