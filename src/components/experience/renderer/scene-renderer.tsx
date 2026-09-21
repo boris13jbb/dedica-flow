@@ -2,6 +2,9 @@
 
 import { IntroScene } from '../scenes/intro/intro-scene'
 import { GalaxyScene } from '../scenes/galaxy/galaxy-scene'
+import { NebulaScene } from '../scenes/nebula/nebula-scene'
+import { FlowersScene } from '../scenes/flowers/flowers-scene'
+import { PhotoOrbitScene } from '../scenes/photo-orbit/photo-orbit-scene'
 import { MessageScene } from '../scenes/message/message-scene'
 import { FinaleScene } from '../scenes/finale/finale-scene'
 import type { SceneConfig } from '@/types'
@@ -20,7 +23,16 @@ export function SceneRenderer({ scene, isPlaying, quality }: SceneRendererProps)
       return <IntroScene config={config} isPlaying={isPlaying} />
     
     case 'galaxy':
-      return <GalaxyScene config={config} isPlaying={isPlaying} quality={quality} />
+      return <GalaxyScene config={config} quality={quality} />
+    
+    case 'nebula':
+      return <NebulaScene config={config} quality={quality} />
+    
+    case 'flowers':
+      return <FlowersScene config={config} quality={quality} />
+    
+    case 'photoOrbit':
+      return <PhotoOrbitScene config={config} quality={quality} />
     
     case 'message':
       return <MessageScene config={config} isPlaying={isPlaying} />

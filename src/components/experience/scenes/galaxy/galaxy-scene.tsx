@@ -54,7 +54,6 @@ function Stars({ config }: StarsProps) {
 
 interface GalaxySceneProps {
   config: Record<string, unknown>
-  isPlaying: boolean
   quality: 'auto' | 'low' | 'medium' | 'high'
 }
 

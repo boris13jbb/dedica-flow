@@ -114,7 +114,7 @@ INSERT INTO templates (
         "config": {
           "primaryColor": "#fbbf24",
           "secondaryColor": "#f59e0b",
-          "density": 0.7,
+          "density": 100,
           "opacity": 0.6,
           "speed": 0.3,
           "scale": 1.2,
@@ -130,12 +130,14 @@ INSERT INTO templates (
         "trigger": "auto",
         "enabled": true,
         "config": {
+          "mode": "spiral",
           "amount": 40,
           "scale": 1.0,
           "spread": 15,
           "speed": 1.0,
-          "rotation": true,
-          "mode": "spiral"
+          "rotation": 1.5,
+          "flowerImage": null,
+          "backgroundColor": "#000000"
         }
       },
       {
@@ -147,13 +149,14 @@ INSERT INTO templates (
         "trigger": "auto",
         "enabled": true,
         "config": {
-          "gallery": [],
+          "photos": [],
           "radius": 8,
-          "cardScale": 1.0,
+          "cardScale": 1.5,
           "speed": 0.5,
-          "rotation": true,
+          "rotation": 1.0,
           "spacing": 1.5,
-          "borderRadius": 8
+          "borderRadius": 10,
+          "backgroundColor": "#000000"
         }
       },
       {

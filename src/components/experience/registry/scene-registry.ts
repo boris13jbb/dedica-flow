@@ -201,6 +201,255 @@ export const galaxySceneDefinition: SceneDefinition<GalaxySceneConfig> = {
   ],
 }
 
+// Nebula Scene
+export const nebulaSceneSchema = z.object({
+  primaryColor: z.string().default('#ff00ff'),
+  secondaryColor: z.string().default('#00ffff'),
+  density: z.number().min(10).max(500).default(100),
+  opacity: z.number().min(0).max(1).default(0.7),
+  speed: z.number().min(0).max(2).default(0.3),
+  scale: z.number().min(0.5).max(3).default(1.5),
+  bloom: z.number().min(0).max(2).default(1.2),
+})
+
+export type NebulaSceneConfig = z.infer<typeof nebulaSceneSchema>
+
+export const nebulaSceneDefinition: SceneDefinition<NebulaSceneConfig> = {
+  type: 'nebula',
+  name: 'Nebulosa',
+  description: 'Efecto de nebulosa con partículas coloridas',
+  icon: 'Cloud',
+  category: '3d',
+  schema: nebulaSceneSchema,
+  defaultConfig: nebulaSceneSchema.parse({}),
+  fields: [
+    {
+      key: 'primaryColor',
+      label: 'Color primario',
+      type: 'color',
+    },
+    {
+      key: 'secondaryColor',
+      label: 'Color secundario',
+      type: 'color',
+    },
+    {
+      key: 'density',
+      label: 'Densidad',
+      type: 'range',
+      min: 10,
+      max: 500,
+      step: 10,
+    },
+    {
+      key: 'opacity',
+      label: 'Opacidad',
+      type: 'range',
+      min: 0,
+      max: 1,
+      step: 0.1,
+    },
+    {
+      key: 'speed',
+      label: 'Velocidad',
+      type: 'range',
+      min: 0,
+      max: 2,
+      step: 0.1,
+    },
+    {
+      key: 'scale',
+      label: 'Escala',
+      type: 'range',
+      min: 0.5,
+      max: 3,
+      step: 0.1,
+    },
+    {
+      key: 'bloom',
+      label: 'Intensidad de brillo',
+      type: 'range',
+      min: 0,
+      max: 2,
+      step: 0.1,
+    },
+  ],
+}
+
+// Flowers Scene
+export const flowersSceneSchema = z.object({
+  mode: z.enum(['bouquet', 'rain', 'spiral', 'orbit', 'tunnel']).default('bouquet'),
+  amount: z.number().min(5).max(100).default(20),
+  scale: z.number().min(0.1).max(3).default(1),
+  spread: z.number().min(1).max(20).default(5),
+  speed: z.number().min(0).max(2).default(0.5),
+  rotation: z.number().min(0).max(5).default(1),
+  flowerImage: z.string().nullable().default(null),
+  backgroundColor: z.string().default('#000000'),
+})
+
+export type FlowersSceneConfig = z.infer<typeof flowersSceneSchema>
+
+export const flowersSceneDefinition: SceneDefinition<FlowersSceneConfig> = {
+  type: 'flowers',
+  name: 'Flores',
+  description: 'Flores flotantes en diferentes modos',
+  icon: 'Flower',
+  category: '3d',
+  schema: flowersSceneSchema,
+  defaultConfig: flowersSceneSchema.parse({}),
+  fields: [
+    {
+      key: 'mode',
+      label: 'Modo',
+      type: 'select',
+      options: [
+        { label: 'Ramo', value: 'bouquet' },
+        { label: 'Lluvia', value: 'rain' },
+        { label: 'Espiral', value: 'spiral' },
+        { label: 'Órbita', value: 'orbit' },
+        { label: 'Túnel', value: 'tunnel' },
+      ],
+    },
+    {
+      key: 'flowerImage',
+      label: 'URL de imagen',
+      type: 'text',
+      placeholder: 'https://...',
+    },
+    {
+      key: 'amount',
+      label: 'Cantidad',
+      type: 'range',
+      min: 5,
+      max: 100,
+      step: 5,
+    },
+    {
+      key: 'scale',
+      label: 'Escala',
+      type: 'range',
+      min: 0.1,
+      max: 3,
+      step: 0.1,
+    },
+    {
+      key: 'spread',
+      label: 'Dispersión',
+      type: 'range',
+      min: 1,
+      max: 20,
+      step: 1,
+    },
+    {
+      key: 'speed',
+      label: 'Velocidad',
+      type: 'range',
+      min: 0,
+      max: 2,
+      step: 0.1,
+    },
+    {
+      key: 'rotation',
+      label: 'Rotación',
+      type: 'range',
+      min: 0,
+      max: 5,
+      step: 0.5,
+    },
+    {
+      key: 'backgroundColor',
+      label: 'Color de fondo',
+      type: 'color',
+    },
+  ],
+}
+
+// Photo Orbit Scene
+export const photoOrbitSceneSchema = z.object({
+  photos: z.array(z.string()).default([]),
+  radius: z.number().min(2).max(20).default(8),
+  cardScale: z.number().min(0.5).max(3).default(1.5),
+  speed: z.number().min(0).max(2).default(0.5),
+  rotation: z.number().min(0).max(5).default(1),
+  spacing: z.number().min(0.5).max(5).default(1.5),
+  borderRadius: z.number().min(0).max(50).default(10),
+  backgroundColor: z.string().default('#000000'),
+})
+
+export type PhotoOrbitSceneConfig = z.infer<typeof photoOrbitSceneSchema>
+
+export const photoOrbitSceneDefinition: SceneDefinition<PhotoOrbitSceneConfig> = {
+  type: 'photoOrbit',
+  name: 'Órbita de Fotos',
+  description: 'Fotos girando en órbita 3D',
+  icon: 'Images',
+  category: '3d',
+  schema: photoOrbitSceneSchema,
+  defaultConfig: photoOrbitSceneSchema.parse({}),
+  fields: [
+    {
+      key: 'photos',
+      label: 'URLs de fotos (una por línea)',
+      type: 'textarea',
+      placeholder: 'https://...',
+    },
+    {
+      key: 'radius',
+      label: 'Radio',
+      type: 'range',
+      min: 2,
+      max: 20,
+      step: 1,
+    },
+    {
+      key: 'cardScale',
+      label: 'Tamaño',
+      type: 'range',
+      min: 0.5,
+      max: 3,
+      step: 0.1,
+    },
+    {
+      key: 'speed',
+      label: 'Velocidad',
+      type: 'range',
+      min: 0,
+      max: 2,
+      step: 0.1,
+    },
+    {
+      key: 'rotation',
+      label: 'Rotación',
+      type: 'range',
+      min: 0,
+      max: 5,
+      step: 0.5,
+    },
+    {
+      key: 'spacing',
+      label: 'Espaciado',
+      type: 'range',
+      min: 0.5,
+      max: 5,
+      step: 0.1,
+    },
+    {
+      key: 'borderRadius',
+      label: 'Redondeo',
+      type: 'range',
+      min: 0,
+      max: 50,
+      step: 5,
+    },
+    {
+      key: 'backgroundColor',
+      label: 'Color de fondo',
+      type: 'color',
+    },
+  ],
+}
+
 // Message Scene
 export const messageSceneSchema = z.object({
   text: z.string().default('Tu mensaje especial aquí'),
@@ -377,6 +626,9 @@ export const finaleSceneDefinition: SceneDefinition<FinaleSceneConfig> = {
 export const sceneRegistry = new Map<SceneType, SceneDefinition>([
   ['intro', introSceneDefinition],
   ['galaxy', galaxySceneDefinition],
+  ['nebula', nebulaSceneDefinition],
+  ['flowers', flowersSceneDefinition],
+  ['photoOrbit', photoOrbitSceneDefinition],
   ['message', messageSceneDefinition],
   ['finale', finaleSceneDefinition],
 ])
