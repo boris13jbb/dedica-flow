@@ -1,14 +1,42 @@
 # DedicaFlow
 
 [![GitHub Repository](https://img.shields.io/badge/GitHub-dedica--flow-blue?logo=github)](https://github.com/boris13jbb/dedica-flow)
+[![CI](https://github.com/boris13jbb/dedica-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/boris13jbb/dedica-flow/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Private-red)](./LICENSE)
+[![Release](https://img.shields.io/github/v/release/boris13jbb/dedica-flow)](https://github.com/boris13jbb/dedica-flow/releases)
+
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.5-black?logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.8-61dafb?logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Ready-3ECF8E?logo=supabase)](https://supabase.com/)
+[![Three.js](https://img.shields.io/badge/Three.js-0.186-black?logo=three.js)](https://threejs.org/)
 
 **Plataforma privada para crear, editar, previsualizar y publicar experiencias audiovisuales interactivas completamente personalizables.**
 
 🔗 **Repositorio:** [github.com/boris13jbb/dedica-flow](https://github.com/boris13jbb/dedica-flow)
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/boris13jbb/dedica-flow.git
+cd dedica-flow
+
+# 2. Ejecutar setup automático
+chmod +x setup.sh
+./setup.sh
+
+# 3. Configurar variables de entorno (editar .env.local)
+
+# 4. Iniciar desarrollo
+npm run dev
+```
+
+➡️ **Instalación detallada**: Ver sección [Instalación](#-instalación)
+
+---
 
 ## 🎯 Características
 
@@ -282,6 +310,22 @@ Este proyecto está diseñado como plataforma privada MVP. Para modificaciones:
 - [x] FASE 9: Responsive + Performance + Fallbacks
 - [x] FASE 10: Testing completo + Documentación final + Deploy producción
 - [x] ✅ Repositorio publicado en GitHub
+
+## 📚 Documentación Adicional
+
+| Documento | Descripción |
+|-----------|-------------|
+| [ROADMAP.md](ROADMAP.md) | Plan de desarrollo y características futuras |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Arquitectura técnica del proyecto |
+| [FAQ.md](FAQ.md) | Preguntas frecuentes |
+| [SECURITY.md](SECURITY.md) | Política de seguridad |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Código de conducta |
+| [CHANGELOG.md](CHANGELOG.md) | Historial de cambios |
+| [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | Guía de optimización |
+| [docs/TESTING.md](docs/TESTING.md) | Guía de testing |
+| [docs/PRODUCTION.md](docs/PRODUCTION.md) | Guía de producción |
+
+---
 
 ## 📄 Licencia
 
