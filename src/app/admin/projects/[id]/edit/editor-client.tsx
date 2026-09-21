@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Save, Eye, Loader2 } from 'lucide-react'
+import { ArrowLeft, Save, Eye, Loader2, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useEditorStore } from '@/stores'
@@ -229,6 +229,17 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
           >
             <Save className="w-4 h-4 mr-2" />
             Guardar
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            onClick={() => router.push(`/admin/projects/${project.id}/publish`)}
+          >
+            <Globe className="w-4 h-4 mr-2" />
+            Publicar
           </Button>
 
           <Button

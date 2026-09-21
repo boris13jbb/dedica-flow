@@ -3,7 +3,7 @@
 import { requireAuth, getOrCreateUserWorkspace } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { AssetInsert, Json } from '@/types'
+import type { Json } from '@/types'
 
 const BUCKET_NAME = 'project-assets'
 
