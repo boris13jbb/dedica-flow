@@ -1,5 +1,8 @@
 import type { Database } from './database.types'
 
+// Export Json type
+export type { Json } from './database.types'
+
 // Workspace types
 export type Workspace = Database['public']['Tables']['workspaces']['Row']
 export type WorkspaceInsert = Database['public']['Tables']['workspaces']['Insert']

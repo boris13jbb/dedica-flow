@@ -4,7 +4,7 @@ import { requireAuth, getOrCreateUserWorkspace } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import type { ProjectInsert, Template, Project } from '@/types'
+import type { Template } from '@/types'
 
 type TemplateSelect = Pick<Template, 'id' | 'default_config'>
 
@@ -50,7 +50,7 @@ export async function createProject(formData: FormData) {
 
   const { data: project } = await supabase
     .from('projects')
-    // @ts-ignore - Supabase types issue
+    // @ts-expect-error - Supabase types issue
     .insert(insertData)
     .select('id')
     .single()
@@ -60,5 +60,5 @@ export async function createProject(formData: FormData) {
   }
 
   revalidatePath('/admin')
-  redirect(`/admin/projects/${(project as any).id}/edit`)
+  redirect(`/admin/projects/${(project as { id: string }).id}/edit`)
 }

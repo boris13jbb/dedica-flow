@@ -68,7 +68,7 @@ export async function getOrCreateUserWorkspace(userId: string, userEmail: string
 
     const { data: workspace, error: workspaceError} = await supabase
       .from('workspaces')
-      // @ts-ignore - Supabase types issue
+      // @ts-expect-error - Supabase types issue
       .insert(insertData)
       .select()
       .single()
@@ -78,14 +78,14 @@ export async function getOrCreateUserWorkspace(userId: string, userEmail: string
     }
 
     const memberData = {
-      workspace_id: (workspace as any).id,
+      workspace_id: (workspace as { id: string }).id,
       user_id: userId,
       role: 'owner',
     }
 
     const { error: memberError } = await supabase
       .from('workspace_members')
-      // @ts-ignore - Supabase types issue
+      // @ts-expect-error - Supabase types issue
       .insert(memberData)
 
     if (memberError) {
