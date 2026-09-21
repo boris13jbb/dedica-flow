@@ -1,320 +1,286 @@
 # DedicaStudio
 
-Plataforma para crear, editar, previsualizar y publicar experiencias web audiovisuales e interactivas completamente parametrizables.
+**Plataforma privada para crear, editar, previsualizar y publicar experiencias audiovisuales interactivas completamente personalizables.**
 
-## Estado del Proyecto
+## 🎯 Características
 
-**MVP en desarrollo** - FASE 0 y FASE 1 completadas
+- **Editor Visual Completo**: Interfaz de tres columnas (escenas, preview, inspector) con autosave
+- **Escenas 3D y 2D**: Intro, Galaxy, Message, Finale, Nebula, Flowers, PhotoOrbit
+- **Audio Manager**: Reproducción con fade in/out, control de volumen y loop
+- **Media Library**: Gestión de assets con Supabase Storage
+- **Sistema de Publicación**: Versionado completo con snapshots y URLs públicas
+- **Performance Optimizada**: Detección automática de calidad, WebGL fallbacks, responsive design
+- **Multi-tenancy Ready**: Arquitectura preparada para SaaS con workspaces y RLS
 
-### Fases Completadas
+## 🛠️ Stack Tecnológico
 
-- ✅ **FASE 0**: Scaffold, tooling y UI base
-  - Next.js 16 con App Router
-  - TypeScript strict
-  - Tailwind CSS
-  - Componentes UI (shadcn/ui)
-  - Testing setup (Vitest, Playwright)
-  - Configuración completa de herramientas
+### Frontend
+- **Framework**: Next.js 16.3.5 (App Router, React Server Components)
+- **React**: 19.2.8 con TypeScript strict mode
+- **UI Components**: shadcn/ui + Tailwind CSS
+- **3D Rendering**: three.js + @react-three/fiber + @react-three/drei
+- **Animations**: GSAP + Framer Motion
+- **State Management**: Zustand (editor) + React Hook Form
+- **Validation**: Zod
+- **Drag & Drop**: dnd-kit
 
-- ✅ **FASE 1**: Supabase + Auth + Migraciones + RLS
-  - Clientes de Supabase (browser, server, admin, middleware)
-  - Autenticación con email/password
-  - Migraciones SQL con RLS
-  - Arquitectura multi-tenant
-  - Modelos de datos completos
+### Backend & Database
+- **Supabase**: PostgreSQL + Auth + Storage
+- **RLS Policies**: Seguridad a nivel de fila
+- **Server Actions**: Mutaciones de datos
+- **API Routes**: Operaciones de media
 
-- 🚧 **FASE 2**: Dashboard + Projects CRUD
-  - Dashboard administrativo básico
-  - Creación de proyectos
-  - Página de login
-  - Protección de rutas
+### DevOps
+- **Deployment**: Vercel (recomendado)
+- **Testing**: Vitest + Testing Library + Playwright
+- **Linting**: ESLint + TypeScript strict
 
-### Próximas Fases
+## 🚀 Instalación
 
-- **FASE 3**: Editor shell + Zustand + autosave
-- **FASE 4**: Scene Registry + campos dinámicos
-- **FASE 5**: ExperienceRenderer
-- **FASE 6**: Primera plantilla 3D (Galaxy Yellow Flowers)
-- **FASE 7**: Media Library + audio
-- **FASE 8**: Publication snapshots + versionado
-- **FASE 9**: Responsive + performance + fallbacks
-- **FASE 10**: Testing + documentación + producción
+### Requisitos Previos
+- Node.js 18+ 
+- npm o pnpm
+- Cuenta de Supabase
 
-## Stack Tecnológico
-
-### Frontend/Backend
-- **Next.js 16** - App Router
-- **React 19** - Componentes
-- **TypeScript** - Tipado estricto
-
-### UI
-- **Tailwind CSS** - Estilos
-- **shadcn/ui** - Componentes UI
-- **Lucide React** - Iconos
-
-### Base de Datos
-- **Supabase PostgreSQL** - Base de datos
-- **Supabase Auth** - Autenticación
-- **Supabase Storage** - Almacenamiento de archivos
-
-### 3D y Animaciones
-- **Three.js** - Motor 3D
-- **@react-three/fiber** - React Three
-- **@react-three/drei** - Helpers 3D
-- **GSAP** - Animaciones
-
-### Estado y Formularios
-- **Zustand** - Estado del editor
-- **Zod** - Validación
-- **React Hook Form** - Formularios
-- **dnd-kit** - Drag and drop
-
-### Testing
-- **Vitest** - Tests unitarios
-- **Testing Library** - Tests de componentes
-- **Playwright** - Tests E2E
-
-## Requisitos
-
-- **Node.js** 18+ 
-- **npm** 9+
-- **Cuenta de Supabase** (para desarrollo)
-
-## Instalación
+### 1. Clonar el Repositorio
 
 ```bash
-# Clonar el repositorio
-git clone <repository-url>
+git clone <tu-repo>
 cd dedicastudio
+```
 
-# Instalar dependencias
+### 2. Instalar Dependencias
+
+```bash
 npm install
-
-# Configurar variables de entorno
-cp .env.example .env.local
-# Editar .env.local con tus credenciales de Supabase
 ```
 
-## Variables de Entorno
+### 3. Configurar Variables de Entorno
 
-Crea un archivo `.env.local` basado en `.env.example`:
+Crea un archivo `.env.local` en la raíz:
 
-```bash
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
+```env
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-SUPABASE_SECRET_KEY=your-service-role-key
+NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
+SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
 ```
 
-### Obtener Credenciales de Supabase
+### 4. Configurar Base de Datos
 
-1. Crea un proyecto en [supabase.com](https://supabase.com)
-2. Ve a Settings > API
-3. Copia:
-   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon/public` key → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-   - `service_role` key → `SUPABASE_SECRET_KEY`
-
-## Configuración de Supabase
-
-### 1. Ejecutar Migraciones
-
-En el panel de Supabase SQL Editor, ejecuta:
-
-```sql
--- Contenido de: supabase/migrations/20260921000000_initial_schema.sql
-```
-
-### 2. Ejecutar Seed (Opcional)
-
-```sql
--- Contenido de: supabase/seed.sql
-```
-
-Esto creará la plantilla del sistema "Galaxy Yellow Flowers".
-
-### 3. Crear Primer Usuario
-
-Desde Supabase Dashboard:
-1. Ve a Authentication > Users
-2. Añade un nuevo usuario manualmente con email y contraseña
-3. Confirma el email del usuario
-
-## Desarrollo
+Ejecuta las migraciones en Supabase:
 
 ```bash
-# Iniciar servidor de desarrollo
-npm run dev
+# En el dashboard de Supabase, ejecuta los archivos SQL en orden:
+# 1. supabase/migrations/20260921000000_initial_schema.sql
+# 2. supabase/migrations/20260921010000_storage_setup.sql
+# 3. supabase/seed.sql (opcional, datos de ejemplo)
+```
 
-# Ejecutar linter
+### 5. Iniciar Desarrollo
+
+```bash
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+## 📁 Estructura del Proyecto
+
+```
+/workspace
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── admin/             # Panel administrativo
+│   │   ├── api/               # API Routes
+│   │   ├── p/                 # Experiencias públicas
+│   │   └── login/             # Autenticación
+│   ├── components/
+│   │   ├── admin/             # Componentes admin
+│   │   ├── editor/            # Editor de experiencias
+│   │   ├── experience/        # Renderer y escenas
+│   │   ├── media/             # Media library
+│   │   ├── publish/           # Sistema de publicación
+│   │   └── ui/                # shadcn/ui components
+│   ├── hooks/                 # Custom hooks
+│   ├── lib/                   # Utilidades
+│   ├── stores/                # Zustand stores
+│   └── types/                 # TypeScript types
+├── supabase/
+│   ├── migrations/            # Migraciones SQL
+│   └── seed.sql               # Datos de ejemplo
+└── public/                    # Assets estáticos
+```
+
+## 🎨 Uso
+
+### 1. Login
+Inicia sesión con tu cuenta de Supabase en `/login`.
+
+### 2. Crear Proyecto
+- Ve a `/admin` y haz clic en "Nuevo Proyecto"
+- Define nombre, slug y título
+
+### 3. Editar Experiencia
+- Abre el editor en `/admin/projects/[id]/edit`
+- Agrega escenas desde el panel izquierdo
+- Configura cada escena en el inspector (derecha)
+- Previsualiza en el panel central
+
+### 4. Gestionar Media
+- Ve a `/admin/projects/[id]/media`
+- Sube imágenes, videos y audios
+- Usa los assets en las escenas
+
+### 5. Publicar
+- Ve a `/admin/projects/[id]/publish`
+- Haz clic en "Publicar" para generar un snapshot
+- La experiencia estará disponible en `/p/[slug]`
+
+## 🧪 Testing
+
+```bash
+# Tests unitarios
+npm run test
+
+# Tests E2E
+npm run test:e2e
+
+# Linter
 npm run lint
 
-# Verificar tipos
+# Type checking
 npm run type-check
-
-# Ejecutar tests unitarios
-npm run test
-
-# Ejecutar tests E2E
-npm run test:e2e
-
-# Build de producción
-npm run build
-
-# Iniciar servidor de producción
-npm start
 ```
 
-La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
+## 📊 Performance
 
-## Estructura del Proyecto
+### Optimizaciones Implementadas
 
-```
-src/
-├── app/                  # Rutas de Next.js App Router
-│   ├── admin/           # Panel administrativo
-│   │   ├── projects/    # Gestión de proyectos
-│   │   └── page.tsx     # Dashboard
-│   ├── login/           # Autenticación
-│   ├── p/               # Experiencias públicas (próximamente)
-│   └── api/             # API routes (próximamente)
-├── components/
-│   ├── admin/           # Componentes administrativos
-│   ├── editor/          # Componentes del editor (próximamente)
-│   ├── experience/      # Motor de renderizado (próximamente)
-│   ├── media/           # Gestión de medios (próximamente)
-│   └── ui/              # Componentes UI base
-├── lib/
-│   ├── auth/            # Autenticación
-│   ├── supabase/        # Clientes de Supabase
-│   ├── storage/         # Gestión de storage (próximamente)
-│   ├── validation/      # Schemas de validación (próximamente)
-│   └── utils/           # Utilidades
-├── stores/              # Estado global (próximamente)
-├── types/               # Tipos TypeScript
-└── config/              # Configuración
+1. **Quality Manager**: Ajuste automático de calidad según dispositivo
+   - Detección de memoria, DPR, móvil
+   - Multiplicador de partículas
+   - Configuración de pixelRatio
 
-supabase/
-├── migrations/          # Migraciones SQL
-└── seed.sql            # Datos iniciales
+2. **WebGL Fallback**: Detección y mensaje para navegadores sin WebGL
 
-tests/
-├── unit/               # Tests unitarios (próximamente)
-└── e2e/                # Tests E2E (próximamente)
-```
+3. **Lazy Loading**: Suspense boundaries para componentes pesados
 
-## Arquitectura
+4. **Error Boundaries**: Captura y recuperación de errores en renderer
 
-### Multi-Tenancy
+5. **Prefers-reduced-motion**: Respeto a preferencias de accesibilidad
 
-El sistema está diseñado para multi-tenancy desde el inicio:
+6. **Responsive Design**: Mobile-first con breakpoints optimizados
 
-- **Workspaces**: Espacios de trabajo aislados
-- **Workspace Members**: Miembros con roles (owner, admin, editor, viewer)
-- **RLS**: Row Level Security para aislamiento de datos
-- **Ownership**: Todas las entidades pertenecen a un workspace
+7. **Bundle Optimization**: 
+   - `optimizePackageImports` para three.js y otros
+   - Tree-shaking automático
+   - Code splitting por ruta
 
-### Modelo de Datos
+### Métricas de Calidad
 
-```
-workspaces
-├── workspace_members
-├── projects
-│   ├── scenes
-│   └── publications
-├── templates
-└── assets
-```
+| Nivel | Partículas | Bloom | Shadows | Antialias | PixelRatio |
+|-------|-----------|-------|---------|-----------|------------|
+| Low   | 30%       | ❌    | ❌      | ❌        | ≤1         |
+| Medium| 60%       | ❌    | ❌      | ✅        | ≤1.5       |
+| High  | 100%      | ✅    | ✅      | ✅        | ≤2         |
 
-### Seguridad
+## 🔒 Seguridad
 
-- **RLS habilitado** en todas las tablas críticas
-- **Server-side auth** verificada en cada request
-- **Secret keys** solo en servidor
-- **Políticas de acceso** basadas en membership
-- **Publicaciones anónimas** para experiencias públicas
+### Row Level Security (RLS)
 
-## Flujo de Trabajo
+Todas las tablas tienen políticas RLS activas:
 
-### Crear una Experiencia
+- **workspaces**: Solo miembros autorizados
+- **workspace_members**: Solo administradores del workspace
+- **projects**: Solo miembros del workspace
+- **publications**: Solo miembros del workspace (lectura pública para activas)
+- **project_assets**: Solo miembros del workspace (lectura pública)
 
-1. **Login** → Autenticación
-2. **Dashboard** → Ver proyectos
-3. **Nuevo Proyecto** → Seleccionar plantilla
-4. **Editor** → Personalizar escenas (próximamente)
-5. **Preview** → Previsualizar (próximamente)
-6. **Publicar** → Generar URL pública (próximamente)
+### Bucket Storage
 
-## Testing
+- Escritura: Solo usuarios autenticados de su workspace
+- Lectura pública: Todos los assets (necesario para `/p/[slug]`)
 
-```bash
-# Tests unitarios con Vitest
-npm run test
-
-# Tests unitarios con UI
-npm run test:ui
-
-# Tests E2E con Playwright
-npm run test:e2e
-```
-
-## Deployment
+## 🌐 Deployment
 
 ### Vercel (Recomendado)
 
-1. Conecta tu repositorio a Vercel
-2. Configura las variables de entorno
-3. Deploy automático en cada push a main
+1. Conecta tu repositorio en Vercel
+2. Configura las variables de entorno:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+3. Deploy automático en cada push
+
+### Build Manual
 
 ```bash
-# O usando Vercel CLI
-vercel
+npm run build
+npm start
 ```
 
-### Otros Proveedores
+## 🧩 Registro de Escenas
 
-La aplicación es una Next.js App Router estándar compatible con cualquier proveedor que soporte Next.js 16+.
+### Escenas Disponibles
 
-## Roadmap
+| Tipo        | Descripción                                   | Config Principal                |
+|-------------|-----------------------------------------------|---------------------------------|
+| intro       | Pantalla de bienvenida con partículas         | title, subtitle, duration       |
+| galaxy      | Galaxia 3D con estrellas rotantes             | starCount, rotationSpeed        |
+| message     | Mensaje animado con estilos configurables     | text, fontSize, color           |
+| finale      | Pantalla final con opción de repetir          | message, buttonText             |
+| nebula      | Efecto nebulosa 3D con partículas de color    | density, colors, speed          |
+| flowers     | Flores 3D con múltiples modos de disposición  | mode, count, texture            |
+| photoOrbit  | Fotos orbitando en círculo 3D                 | images, radius, speed           |
 
-### MVP (En Progreso)
+### Agregar Nueva Escena
 
-- [x] Autenticación
-- [x] Dashboard básico
-- [x] Crear proyectos
-- [ ] Editor visual
-- [ ] Scene Registry
-- [ ] Renderer 3D
-- [ ] Media Library
-- [ ] Sistema de publicación
-- [ ] Primera plantilla completa
+1. Crea el componente en `src/components/experience/scenes/[nombre]/`
+2. Registra en `src/components/experience/registry/scene-registry.ts`:
 
-### Post-MVP
+```typescript
+export const sceneRegistry = new Map<SceneType, SceneDefinition>([
+  // ... escenas existentes
+  ['tuEscena', {
+    type: 'tuEscena',
+    name: 'Tu Escena',
+    description: 'Descripción',
+    icon: 'icon-name',
+    defaultConfig: { /* config por defecto */ },
+    editorFields: [ /* campos del inspector */ ],
+  }],
+])
+```
 
-- [ ] Más plantillas
-- [ ] Editor de plantillas
-- [ ] Colaboración en tiempo real
-- [ ] Analytics de experiencias
-- [ ] Integración con CDN
-- [ ] Sistema de facturación
-- [ ] API pública
+3. Agrega el case en `scene-renderer.tsx`
 
-## Contribución
+## 🤝 Contribución
 
-Este proyecto está en desarrollo activo. Las contribuciones están cerradas hasta el lanzamiento del MVP.
+Este proyecto está diseñado como plataforma privada MVP. Para modificaciones:
 
-## Licencia
+1. Respeta la arquitectura multi-tenancy
+2. Mantén RLS policies actualizadas
+3. Ejecuta tests antes de commit
+4. Documenta nuevas escenas en el registro
 
-Propietario - Todos los derechos reservados
+## 📝 Roadmap
 
-## Soporte
+- [x] FASE 1-4: Core architecture + Supabase + Auth + Admin + Editor base
+- [x] FASE 5: ExperienceRenderer + Audio Manager
+- [x] FASE 6: Escenas 3D adicionales (Nebula, Flowers, PhotoOrbit)
+- [x] FASE 7: Media Library + Supabase Storage
+- [x] FASE 8: Sistema de publicación + versionado
+- [x] FASE 9: Responsive + Performance + Fallbacks
+- [ ] FASE 10: Testing completo + Documentación final + Deploy producción
 
-Para preguntas o issues durante el desarrollo, contacta al equipo de desarrollo.
+## 📄 Licencia
 
----
+Proyecto privado - Todos los derechos reservados.
 
-**Última actualización**: Septiembre 2026  
-**Versión**: 0.1.0 (MVP en desarrollo)
+## 🆘 Soporte
+
+Para problemas o preguntas sobre el proyecto, consulta:
+- Documentación de [Next.js](https://nextjs.org/docs)
+- Documentación de [Supabase](https://supabase.com/docs)
+- Documentación de [React Three Fiber](https://docs.pmnd.rs/react-three-fiber)
