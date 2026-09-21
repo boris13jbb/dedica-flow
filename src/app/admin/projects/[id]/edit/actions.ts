@@ -3,7 +3,7 @@
 import { requireAuth, getOrCreateUserWorkspace } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Scene, SceneInsert, SceneUpdate, Json } from '@/types'
+import type { Scene, SceneInsert, Json } from '@/types'
 
 export async function updateProjectScenes(projectId: string, scenes: Partial<Scene>[]) {
   const user = await requireAuth()

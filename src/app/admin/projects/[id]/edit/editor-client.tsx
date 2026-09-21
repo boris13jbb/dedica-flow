@@ -263,6 +263,9 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
           <PreviewPanel
             device={previewDevice}
             onDeviceChange={setPreviewDevice}
+            projectName={project.name}
+            projectSlug={project.slug}
+            scenes={scenes}
           />
         </div>
 
