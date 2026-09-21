@@ -1,6 +1,14 @@
-# DedicaStudio
+# DedicaFlow
+
+[![GitHub Repository](https://img.shields.io/badge/GitHub-dedica--flow-blue?logo=github)](https://github.com/boris13jbb/dedica-flow)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3.5-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.8-61dafb?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Ready-3ECF8E?logo=supabase)](https://supabase.com/)
 
 **Plataforma privada para crear, editar, previsualizar y publicar experiencias audiovisuales interactivas completamente personalizables.**
+
+🔗 **Repositorio:** [github.com/boris13jbb/dedica-flow](https://github.com/boris13jbb/dedica-flow)
 
 ## 🎯 Características
 
@@ -45,8 +53,8 @@
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone <tu-repo>
-cd dedicastudio
+git clone https://github.com/boris13jbb/dedica-flow.git
+cd dedica-flow
 ```
 
 ### 2. Instalar Dependencias
@@ -272,7 +280,8 @@ Este proyecto está diseñado como plataforma privada MVP. Para modificaciones:
 - [x] FASE 7: Media Library + Supabase Storage
 - [x] FASE 8: Sistema de publicación + versionado
 - [x] FASE 9: Responsive + Performance + Fallbacks
-- [ ] FASE 10: Testing completo + Documentación final + Deploy producción
+- [x] FASE 10: Testing completo + Documentación final + Deploy producción
+- [x] ✅ Repositorio publicado en GitHub
 
 ## 📄 Licencia
 
@@ -280,7 +289,12 @@ Proyecto privado - Todos los derechos reservados.
 
 ## 🆘 Soporte
 
-Para problemas o preguntas sobre el proyecto, consulta:
-- Documentación de [Next.js](https://nextjs.org/docs)
-- Documentación de [Supabase](https://supabase.com/docs)
-- Documentación de [React Three Fiber](https://docs.pmnd.rs/react-three-fiber)
+Para problemas o preguntas sobre el proyecto:
+- 📝 [Issues en GitHub](https://github.com/boris13jbb/dedica-flow/issues)
+- 📚 Documentación de [Next.js](https://nextjs.org/docs)
+- 📚 Documentación de [Supabase](https://supabase.com/docs)
+- 📚 Documentación de [React Three Fiber](https://docs.pmnd.rs/react-three-fiber)
+
+---
+
+**Desarrollado con ❤️ usando Next.js, React, Three.js y Supabase**
