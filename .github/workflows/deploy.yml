@@ -1,31 +1,55 @@
 name: Deploy to Vercel
 
+# Despliega producción solo después de que CI pase en main.
+# Requiere el secret VERCEL_TOKEN (ver comentarios abajo).
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches: [main]
 
 jobs:
   deploy:
+    name: Deploy production
     runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     steps:
-      - uses: actions/checkout@v3
-      
+      - name: Checkout commit verificado por CI
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          
+          cache: 'npm'
+
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
-        
-      - name: Build
-        run: npm run build
-        
-      - name: Deploy to Vercel
+        run: npm ci --legacy-peer-deps
+
+      # El build real ocurre en Vercel con las env del proyecto.
+      # Este paso valida que el SHA sigue compilando en CI runner.
+      - name: Build check
+        run: |
+          export NEXT_PUBLIC_SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL:-https://placeholder.supabase.co}"
+          export NEXT_PUBLIC_SUPABASE_ANON_KEY="${NEXT_PUBLIC_SUPABASE_ANON_KEY:-placeholder-anon-key}"
+          npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Deploy to Vercel (production)
         uses: amondnet/vercel-action@v25
         with:
+          # Obligatorio: crear en GitHub → Settings → Secrets and variables → Actions
+          # Nombre: VERCEL_TOKEN
+          # Origen: https://vercel.com/account/tokens (Create Token)
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          # IDs del proyecto (también pueden vivir como secrets; valores en .vercel/project.json)
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
+          working-directory: ./
