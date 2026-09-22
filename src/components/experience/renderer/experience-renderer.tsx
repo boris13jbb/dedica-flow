@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, Suspense, useRef } from 'react'
+import { useEffect, Suspense, useMemo, useRef } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useRendererStore } from '@/stores'
 import { SceneRenderer } from './scene-renderer'
@@ -9,18 +9,22 @@ import { ExperienceErrorBoundary } from './error-boundary'
 import { WebGLFallback } from './webgl-fallback'
 import { ExperienceLoader } from './loader'
 import { useQualityManager, useSceneTimeline } from '@/hooks'
+import { prepareScenesForPresentation } from '../scenes/photo-orbit/photo-orbit-utils'
 import type { ExperienceConfig } from '@/types'
 
 interface ExperienceRendererProps {
   config: ExperienceConfig
   autoPlay?: boolean
   quality?: 'auto' | 'low' | 'medium' | 'high'
+  /** editor: empty states de edición; published: omitir órbitas sin fotos */
+  presentationMode?: 'editor' | 'published'
 }
 
 function ExperienceContent({
   config,
   autoPlay = false,
   quality: qualityMode = 'auto',
+  presentationMode = 'published',
 }: ExperienceRendererProps) {
   const qualitySettings = useQualityManager(qualityMode)
   const { currentSceneIndex, isPlaying, setConfig, play } = useRendererStore(
@@ -33,12 +37,21 @@ function ExperienceContent({
   )
   const appliedSigRef = useRef<string | null>(null)
 
+  const runtimeConfig = useMemo<ExperienceConfig>(
+    () => ({
+      ...config,
+      scenes: prepareScenesForPresentation(config.scenes, presentationMode),
+    }),
+    [config, presentationMode]
+  )
+
   useEffect(() => {
     // Solo aplicar cuando el contenido del config cambia de verdad
     const sig = JSON.stringify({
-      projectId: config.projectId,
-      slug: config.slug,
-      scenes: config.scenes.map((s) => ({
+      projectId: runtimeConfig.projectId,
+      slug: runtimeConfig.slug,
+      presentationMode,
+      scenes: runtimeConfig.scenes.map((s) => ({
         id: s.id,
         position: s.position,
         enabled: s.enabled,
@@ -46,20 +59,20 @@ function ExperienceContent({
         duration: s.duration,
         config: s.config,
       })),
-      audio: config.audio,
+      audio: runtimeConfig.audio,
     })
     if (appliedSigRef.current === sig) return
     appliedSigRef.current = sig
-    setConfig(config)
+    setConfig(runtimeConfig)
     if (autoPlay) {
       play()
     }
-  }, [config, autoPlay, setConfig, play])
+  }, [runtimeConfig, presentationMode, autoPlay, setConfig, play])
 
-  useSceneTimeline(config)
+  useSceneTimeline(runtimeConfig)
 
-  const currentScene = config.scenes[currentSceneIndex]
-  const enabledScenes = config.scenes.filter((s) => s.enabled)
+  const currentScene = runtimeConfig.scenes[currentSceneIndex]
+  const enabledScenes = runtimeConfig.scenes.filter((s) => s.enabled)
 
   if (!currentScene || !currentScene.enabled) {
     return (
@@ -71,14 +84,14 @@ function ExperienceContent({
 
   return (
     <div className="w-full h-full relative bg-zinc-950">
-      {config.audio?.url && (
+      {runtimeConfig.audio?.url && (
         <AudioManager
           config={{
-            url: config.audio.url,
-            volume: config.audio.volume ?? 0.7,
-            loop: config.audio.loop ?? false,
-            fadeIn: config.audio.fadeIn ?? 2000,
-            fadeOut: config.audio.fadeOut ?? 2000,
+            url: runtimeConfig.audio.url,
+            volume: runtimeConfig.audio.volume ?? 0.7,
+            loop: runtimeConfig.audio.loop ?? false,
+            fadeIn: runtimeConfig.audio.fadeIn ?? 2000,
+            fadeOut: runtimeConfig.audio.fadeOut ?? 2000,
           }}
           isPlaying={isPlaying}
         />
@@ -88,6 +101,7 @@ function ExperienceContent({
         scene={currentScene}
         isPlaying={isPlaying}
         quality={qualitySettings.level}
+        presentationMode={presentationMode}
       />
 
       {process.env.NODE_ENV === 'development' && (
@@ -99,7 +113,7 @@ function ExperienceContent({
           <p>Estado: {isPlaying ? 'Playing' : 'Paused'}</p>
           <p>Calidad: {qualitySettings.level}</p>
           <p>Partículas: {Math.round(qualitySettings.particleMultiplier * 100)}%</p>
-          {config.audio?.url && <p>Audio: Activado</p>}
+          {runtimeConfig.audio?.url && <p>Audio: Activado</p>}
         </div>
       )}
     </div>

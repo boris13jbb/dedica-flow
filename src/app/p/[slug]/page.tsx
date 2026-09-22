@@ -129,6 +129,7 @@ export default async function PublicExperiencePage({ params }: { params: Promise
         config={config}
         autoPlay={true}
         quality="auto"
+        presentationMode="published"
       />
     </div>
   )
