@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRendererStore } from '@/stores'
 import type { IntroSceneConfig } from '@/components/experience/registry'
 
@@ -10,10 +10,17 @@ interface IntroSceneProps {
 }
 
 export function IntroScene({ config, isPlaying }: IntroSceneProps) {
-  const [isVisible, setIsVisible] = useState(true)
+  const [exiting, setExiting] = useState(false)
+  const [prevPlaying, setPrevPlaying] = useState(isPlaying)
   const { nextScene } = useRendererStore()
 
   const introConfig = config as unknown as IntroSceneConfig
+
+  // Al pasar a reproducir, reinicia la salida y remonta con key para animar entrada.
+  if (isPlaying !== prevPlaying) {
+    setPrevPlaying(isPlaying)
+    setExiting(false)
+  }
 
   const [particles] = useState(() => {
     return Array.from({ length: 20 }).map(() => ({
@@ -24,18 +31,8 @@ export function IntroScene({ config, isPlaying }: IntroSceneProps) {
     }))
   })
 
-  useEffect(() => {
-    // En preview pausado permanece visible; al reproducir anima la entrada.
-    if (isPlaying) {
-      setIsVisible(false)
-      const timer = setTimeout(() => setIsVisible(true), 30)
-      return () => clearTimeout(timer)
-    }
-    setIsVisible(true)
-  }, [isPlaying])
-
   const handleStart = () => {
-    setIsVisible(false)
+    setExiting(true)
     setTimeout(() => {
       nextScene()
     }, 500)
@@ -43,19 +40,20 @@ export function IntroScene({ config, isPlaying }: IntroSceneProps) {
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center transition-opacity duration-1000 relative"
+      key={isPlaying ? 'playing' : 'paused'}
+      className="relative flex h-full w-full items-center justify-center transition-opacity duration-1000"
       style={{
         backgroundColor: introConfig.backgroundColor || '#0a0a0a',
-        opacity: isVisible ? 1 : 0,
+        opacity: exiting ? 0 : 1,
       }}
     >
-      <div className="text-center max-w-2xl px-8 relative">
+      <div className="relative max-w-2xl px-8 text-center">
         {introConfig.particlesEnabled && (
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
             {particles.map((particle, i) => (
               <div
                 key={i}
-                className="absolute w-1 h-1 rounded-full animate-pulse"
+                className="absolute h-1 w-1 animate-pulse rounded-full"
                 style={{
                   backgroundColor: introConfig.glowColor || '#fbbf24',
                   left: `${particle.left}%`,
@@ -70,7 +68,7 @@ export function IntroScene({ config, isPlaying }: IntroSceneProps) {
 
         <div className="relative z-10 flex flex-col items-center gap-6">
           <h1
-            className="text-4xl md:text-6xl font-bold animate-experience-fade-in"
+            className="animate-experience-fade-in text-4xl font-bold md:text-6xl"
             style={{
               color: introConfig.textColor || '#ffffff',
               textShadow: `0 0 30px ${introConfig.glowColor || '#fbbf24'}`,
@@ -80,7 +78,7 @@ export function IntroScene({ config, isPlaying }: IntroSceneProps) {
           </h1>
 
           <p
-            className="text-xl md:text-2xl animate-experience-fade-in"
+            className="animate-experience-fade-in text-xl md:text-2xl"
             style={{
               color: introConfig.textColor || '#ffffff',
               animationDelay: '0.25s',
@@ -93,7 +91,7 @@ export function IntroScene({ config, isPlaying }: IntroSceneProps) {
           <button
             type="button"
             onClick={handleStart}
-            className="px-8 py-4 rounded-full text-lg font-medium transition-all duration-300 hover:scale-110 animate-experience-fade-in"
+            className="animate-experience-fade-in rounded-full px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-110"
             style={{
               backgroundColor: introConfig.glowColor || '#fbbf24',
               color: introConfig.backgroundColor || '#0a0a0a',

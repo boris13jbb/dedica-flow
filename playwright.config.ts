@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const baseURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+const port = process.env.PLAYWRIGHT_PORT || '3100'
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://127.0.0.1:${port}`
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -8,7 +9,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: process.env.CI ? 'list' : 'html',
   use: {
     baseURL,
     trace: 'on-first-retry',
@@ -25,9 +26,18 @@ export default defineConfig({
     },
   ],
 
+  // Usa `next start` para no pelear con otro `next dev` en el mismo repo.
   webServer: {
-    command: 'npm run dev',
+    command: `npx next start -H 127.0.0.1 -p ${port}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+    env: {
+      ...process.env,
+      NEXT_PUBLIC_SUPABASE_URL:
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY:
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key',
+    },
   },
 })

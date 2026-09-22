@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { EditorFieldDefinition } from '@/components/experience/registry'
@@ -18,10 +18,13 @@ interface TextFieldProps {
 export function TextField({ field, value, onChange }: TextFieldProps) {
   const external = typeof value === 'string' ? value : value == null ? '' : String(value)
   const [local, setLocal] = useState(external)
+  const [prevExternal, setPrevExternal] = useState(external)
 
-  useEffect(() => {
+  // Sincroniza valor externo sin useEffect (evita set-state-in-effect).
+  if (external !== prevExternal) {
+    setPrevExternal(external)
     setLocal(external)
-  }, [external])
+  }
 
   return (
     <div className="space-y-2">
@@ -57,10 +60,12 @@ interface TextAreaFieldProps {
 export function TextAreaField({ field, value, onChange }: TextAreaFieldProps) {
   const external = typeof value === 'string' ? value : value == null ? '' : String(value)
   const [local, setLocal] = useState(external)
+  const [prevExternal, setPrevExternal] = useState(external)
 
-  useEffect(() => {
+  if (external !== prevExternal) {
+    setPrevExternal(external)
     setLocal(external)
-  }, [external])
+  }
 
   return (
     <div className="space-y-2">
