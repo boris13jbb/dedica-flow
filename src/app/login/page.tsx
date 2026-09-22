@@ -108,7 +108,7 @@ export default function LoginPage() {
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
                 disabled={loading}
-                className="size-4 rounded border-df-border bg-df-surface text-df-primary focus:ring-df-primary"
+                className="size-4 rounded border-df-border bg-df-surface accent-df-primary text-df-primary focus:ring-2 focus:ring-df-primary"
               />
               <Label htmlFor="remember" className="font-normal text-df-muted">
                 Recordarme
