@@ -1,7 +1,7 @@
 name: Deploy to Vercel
 
 # Despliega producción solo después de que CI pase en main.
-# Requiere el secret VERCEL_TOKEN (ver comentarios abajo).
+# Requiere secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
 on:
   workflow_run:
     workflows: ['CI']
@@ -41,15 +41,11 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
+      # amondnet/vercel-action@v25 fija Vercel CLI 25.x; la API actual exige >=47.2.2.
+      # Usamos el CLI instalado por npm ci (devDependency del repo).
       - name: Deploy to Vercel (production)
-        uses: amondnet/vercel-action@v25
-        with:
-          # Obligatorio: crear en GitHub → Settings → Secrets and variables → Actions
-          # Nombre: VERCEL_TOKEN
-          # Origen: https://vercel.com/account/tokens (Create Token)
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          # IDs del proyecto (también pueden vivir como secrets; valores en .vercel/project.json)
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          working-directory: ./
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: npx vercel deploy --prod --yes --token="$VERCEL_TOKEN"
