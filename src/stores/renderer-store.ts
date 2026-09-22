@@ -1,5 +1,9 @@
 import { create } from 'zustand'
 import type { ExperienceConfig } from '@/types'
+import {
+  findFirstEnabledSceneIndex,
+  findNextEnabledSceneIndex,
+} from '@/components/experience/scenes/photo-orbit/photo-orbit-utils'
 
 interface RendererState {
   // Experience data
@@ -52,7 +56,7 @@ export const useRendererStore = create<RendererState>((set, get) => ({
 
     set({
       config,
-      currentSceneIndex: 0,
+      currentSceneIndex: findFirstEnabledSceneIndex(config.scenes),
       sceneProgress: 0,
       isPlaying: false,
     })
@@ -62,15 +66,21 @@ export const useRendererStore = create<RendererState>((set, get) => ({
   
   pause: () => set({ isPlaying: false }),
   
-  restart: () => set({ 
-    isPlaying: true, 
-    currentSceneIndex: 0, 
-    sceneProgress: 0 
-  }),
+  restart: () => {
+    const { config } = get()
+    set({
+      isPlaying: true,
+      currentSceneIndex: config
+        ? findFirstEnabledSceneIndex(config.scenes)
+        : 0,
+      sceneProgress: 0,
+    })
+  },
   
   goToScene: (index) => {
     const { config } = get()
     if (!config || index < 0 || index >= config.scenes.length) return
+    if (!config.scenes[index]?.enabled) return
     
     set({ 
       currentSceneIndex: index, 
@@ -82,17 +92,18 @@ export const useRendererStore = create<RendererState>((set, get) => ({
   nextScene: () => {
     const { config, currentSceneIndex } = get()
     if (!config) return
-    
-    const nextIndex = currentSceneIndex + 1
-    if (nextIndex < config.scenes.length) {
-      set({ 
-        currentSceneIndex: nextIndex, 
-        sceneProgress: 0 
+
+    const nextIndex = findNextEnabledSceneIndex(config.scenes, currentSceneIndex)
+    if (nextIndex !== null) {
+      set({
+        currentSceneIndex: nextIndex,
+        sceneProgress: 0,
       })
-    } else {
-      // End of experience
-      set({ isPlaying: false })
+      return
     }
+
+    // End of experience
+    set({ isPlaying: false })
   },
   
   setSceneProgress: (progress) => {

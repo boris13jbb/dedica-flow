@@ -13,9 +13,15 @@ interface SceneRendererProps {
   scene: SceneConfig
   isPlaying: boolean
   quality: 'auto' | 'low' | 'medium' | 'high'
+  presentationMode?: 'editor' | 'published'
 }
 
-export function SceneRenderer({ scene, isPlaying, quality }: SceneRendererProps) {
+export function SceneRenderer({
+  scene,
+  isPlaying,
+  quality,
+  presentationMode = 'published',
+}: SceneRendererProps) {
   const config = scene.config
 
   switch (scene.sceneType) {
@@ -32,7 +38,13 @@ export function SceneRenderer({ scene, isPlaying, quality }: SceneRendererProps)
       return <FlowersScene config={config} quality={quality} isPlaying={isPlaying} />
     
     case 'photoOrbit':
-      return <PhotoOrbitScene config={config} quality={quality} />
+      return (
+        <PhotoOrbitScene
+          config={config}
+          quality={quality}
+          presentationMode={presentationMode}
+        />
+      )
     
     case 'message':
       return <MessageScene config={config} isPlaying={isPlaying} />

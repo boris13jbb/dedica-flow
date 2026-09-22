@@ -132,6 +132,7 @@ export function PreviewPanel({
               config={experienceConfig}
               autoPlay={false}
               quality="medium"
+              presentationMode="editor"
             />
           </div>
         )}
