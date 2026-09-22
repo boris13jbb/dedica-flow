@@ -2,7 +2,8 @@ import { getAppUrl } from '@/lib/app-url'
 
 // App configuration
 export const appConfig = {
-  name: 'DedicaStudio',
+  name: 'DedicaFlow',
+  tagline: 'Convierte emociones en experiencias inolvidables.',
   description: 'Plataforma para crear experiencias web audiovisuales e interactivas',
   url: getAppUrl(),
   version: '0.1.0',
