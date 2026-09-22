@@ -4,6 +4,8 @@ import { requireAuth, getOrCreateUserWorkspace } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AdminShell } from '@/components/admin/admin-shell'
 import { ProjectWorkspaceNav } from '@/components/admin/project-workspace-nav'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { getProjectAssets } from './actions'
 import { MediaPageClient } from './media-page-client'
 import type { Json } from '@/types'
@@ -19,7 +21,7 @@ export default async function MediaPage({
 
   if (!workspace) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-zinc-400">
+      <div className="flex min-h-screen items-center justify-center bg-df-bg p-6 text-df-muted">
         Error al obtener workspace
       </div>
     )
@@ -44,7 +46,7 @@ export default async function MediaPage({
 
   if (!project) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-zinc-400">
+      <div className="flex min-h-screen items-center justify-center bg-df-bg p-6 text-df-muted">
         Proyecto no encontrado
       </div>
     )
@@ -70,22 +72,25 @@ export default async function MediaPage({
   return (
     <AdminShell
       email={user.email}
-      title={project.name}
-      subtitle="Paso 2 · Inserta el audio y gestiona imágenes o videos"
+      title="Audio y medios"
+      subtitle="Configura la música de la experiencia y gestiona tu biblioteca."
+      breadcrumbs={[
+        { label: 'Experiencias', href: '/admin' },
+        { label: project.name, href: `/admin/projects/${id}/edit` },
+        { label: 'Medios' },
+      ]}
       actions={
         <Link
           href={`/admin/projects/${id}/edit`}
-          className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 transition hover:bg-zinc-800 hover:text-zinc-50"
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
         >
-          <ArrowLeft className="h-4 w-4" />
-          Volver al editor
+          <ArrowLeft className="size-4" />
+          Editor
         </Link>
       }
     >
-      <div className="mb-8 space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-          Flujo del proyecto · /p/{project.slug}
-        </p>
+      <div className="mb-8 space-y-3">
+        <p className="text-xs text-df-muted-fg">/p/{project.slug}</p>
         <ProjectWorkspaceNav projectId={id} />
       </div>
 

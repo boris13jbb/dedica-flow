@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Clapperboard, Music, Rocket } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const STEPS = [
   {
     key: 'edit',
-    label: '1. Escenas',
+    label: 'Escenas',
     description: 'Orden y contenido',
     href: (id: string) => `/admin/projects/${id}/edit`,
     match: '/edit',
@@ -15,7 +16,7 @@ const STEPS = [
   },
   {
     key: 'media',
-    label: '2. Audio y medios',
+    label: 'Audio y medios',
     description: 'Música e imágenes',
     href: (id: string) => `/admin/projects/${id}/media`,
     match: '/media',
@@ -23,7 +24,7 @@ const STEPS = [
   },
   {
     key: 'publish',
-    label: '3. Publicar',
+    label: 'Publicar',
     description: 'Compartir enlace',
     href: (id: string) => `/admin/projects/${id}/publish`,
     match: '/publish',
@@ -34,56 +35,93 @@ const STEPS = [
 interface ProjectWorkspaceNavProps {
   projectId: string
   className?: string
+  /** Compact horizontal tabs (editor toolbar) */
+  variant?: 'cards' | 'tabs'
 }
 
 /**
- * Navegación por pasos del proyecto: deja claro cada apartado funcional.
+ * Navegación por pasos del proyecto: Escenas → Audio → Publicar.
  */
 export function ProjectWorkspaceNav({
   projectId,
   className = '',
+  variant = 'cards',
 }: ProjectWorkspaceNavProps) {
   const pathname = usePathname()
+
+  if (variant === 'tabs') {
+    return (
+      <nav
+        aria-label="Pasos del proyecto"
+        className={cn(
+          'flex gap-1 overflow-x-auto rounded-[var(--radius-lg)] border border-df-border bg-df-surface p-1 df-scrollbar',
+          className
+        )}
+      >
+        {STEPS.map((step) => {
+          const active = pathname.includes(step.match)
+          const Icon = step.icon
+          return (
+            <Link
+              key={step.key}
+              href={step.href(projectId)}
+              aria-current={active ? 'page' : undefined}
+              className={cn(
+                'inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] px-3 py-2 text-xs font-medium transition-colors',
+                active
+                  ? 'bg-df-card text-df-fg shadow-sm'
+                  : 'text-df-muted hover:text-df-fg'
+              )}
+            >
+              <Icon className="size-3.5" />
+              {step.label}
+            </Link>
+          )
+        })}
+      </nav>
+    )
+  }
 
   return (
     <nav
       aria-label="Pasos del proyecto"
-      className={`grid gap-2 sm:grid-cols-3 ${className}`}
+      className={cn('grid gap-2 sm:grid-cols-3', className)}
     >
-      {STEPS.map((step) => {
+      {STEPS.map((step, index) => {
         const active = pathname.includes(step.match)
         const Icon = step.icon
         return (
           <Link
             key={step.key}
             href={step.href(projectId)}
-            className={[
-              'group flex items-center gap-3 rounded-xl border px-3 py-3 transition',
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+              'group flex items-center gap-3 rounded-[var(--radius-xl)] border px-3 py-3 transition-colors',
               active
-                ? 'border-amber-400/50 bg-amber-400/10 shadow-[0_0_0_1px_rgba(251,191,36,0.15)]'
-                : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900',
-            ].join(' ')}
+                ? 'border-df-primary/50 bg-df-primary/10'
+                : 'border-df-border bg-df-surface/50 hover:border-df-border-hover hover:bg-df-card'
+            )}
           >
             <span
-              className={[
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+              className={cn(
+                'flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-lg)]',
                 active
-                  ? 'bg-amber-400 text-zinc-950'
-                  : 'bg-zinc-800 text-zinc-300 group-hover:text-zinc-50',
-              ].join(' ')}
+                  ? 'bg-df-primary text-df-primary-fg'
+                  : 'bg-df-card text-df-muted group-hover:text-df-fg'
+              )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="size-5" />
             </span>
             <span className="min-w-0 text-left">
               <span
-                className={[
+                className={cn(
                   'block text-sm font-semibold',
-                  active ? 'text-amber-100' : 'text-zinc-100',
-                ].join(' ')}
+                  active ? 'text-df-primary-light' : 'text-df-fg'
+                )}
               >
-                {step.label}
+                {index + 1}. {step.label}
               </span>
-              <span className="block truncate text-xs text-zinc-500">
+              <span className="block truncate text-xs text-df-muted-fg">
                 {step.description}
               </span>
             </span>

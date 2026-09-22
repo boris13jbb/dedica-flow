@@ -3,14 +3,17 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
+import { Logo } from '@/components/brand/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { appConfig } from '@/config'
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [remember, setRemember] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,78 +30,105 @@ export default function LoginPage() {
       })
 
       if (signInError) {
-        setError(signInError.message)
+        const message =
+          signInError.message.toLowerCase().includes('invalid')
+            ? 'Correo o contraseña incorrectos.'
+            : 'No se pudo iniciar sesión. Inténtalo de nuevo.'
+        setError(message)
         setLoading(false)
         return
       }
 
+      // remember: la sesión de Supabase ya persiste en localStorage por defecto;
+      // el checkbox documenta la intención UX sin cambiar el contrato de Auth.
+      void remember
+
       router.push('/admin')
       router.refresh()
     } catch {
-      setError('Error al iniciar sesión')
+      setError('Error al iniciar sesión. Comprueba tu conexión.')
       setLoading(false)
     }
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_top,_#1c1917_0%,_#09090b_45%,_#000_100%)] px-4 py-10">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(251,191,36,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(251,191,36,0.08),transparent_25%)]" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden df-atmosphere px-4 py-10">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.1),transparent_45%)]" />
 
-      <div className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950/80 p-6 shadow-2xl backdrop-blur sm:p-8">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400 text-lg font-bold text-zinc-950 shadow-[0_0_30px_rgba(251,191,36,0.35)]">
-            D
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">DedicaStudio</h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            Entra para crear y publicar experiencias audiovisuales
-          </p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-zinc-200">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="tu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-              className="h-11 border-zinc-700 bg-zinc-900 text-zinc-50 placeholder:text-zinc-500"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-zinc-200">
-              Contraseña
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-              className="h-11 border-zinc-700 bg-zinc-900 text-zinc-50 placeholder:text-zinc-500"
-            />
-          </div>
-          {error && (
-            <div className="rounded-lg border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-300">
-              {error}
+      <div className="relative w-full max-w-[420px] animate-df-slide-up">
+        <div className="rounded-[var(--radius-2xl)] border border-df-border bg-df-card/90 p-6 shadow-[var(--shadow-elevated)] backdrop-blur-xl sm:p-8">
+          <div className="mb-8 text-center">
+            <div className="mb-5 flex justify-center">
+              <Logo size="lg" showWordmark={false} />
             </div>
-          )}
-          <Button
-            type="submit"
-            className="h-11 w-full bg-amber-400 text-zinc-950 hover:bg-amber-300"
-            disabled={loading}
-          >
-            {loading ? 'Entrando…' : 'Entrar al panel'}
-          </Button>
-        </form>
+            <h1 className="text-2xl font-semibold tracking-tight text-df-fg">
+              DedicaFlow
+            </h1>
+            <p className="mt-2 text-sm text-df-muted">{appConfig.tagline}</p>
+            <p className="mt-1 font-serif text-sm italic text-df-muted-fg">
+              Historias que se viven.
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4" noValidate>
+            <div className="space-y-2">
+              <Label htmlFor="email">Correo electrónico</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="tu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+                error={Boolean(error)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                error={Boolean(error)}
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                id="remember"
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                disabled={loading}
+                className="size-4 rounded border-df-border bg-df-surface text-df-primary focus:ring-df-primary"
+              />
+              <Label htmlFor="remember" className="font-normal text-df-muted">
+                Recordarme
+              </Label>
+            </div>
+
+            {error && (
+              <div
+                role="alert"
+                className="rounded-[var(--radius-md)] border border-df-error/40 bg-df-error/10 px-3 py-2.5 text-sm text-red-300"
+              >
+                {error}
+              </div>
+            )}
+
+            <Button type="submit" className="h-11 w-full" disabled={loading} loading={loading}>
+              {loading ? 'Iniciando sesión…' : 'Iniciar sesión'}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   )

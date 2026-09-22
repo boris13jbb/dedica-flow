@@ -10,13 +10,15 @@ import {
   XCircle,
   History,
   ExternalLink,
-  Loader2,
   AlertCircle,
   Copy,
   RefreshCw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { toast } from '@/components/ui/toast'
+import { formatPublicationDate } from '@/lib/format'
 import {
   publishProject,
   unpublishProject,
@@ -159,27 +161,19 @@ export function PublishPanel({
   const copyPublicUrl = async () => {
     try {
       await navigator.clipboard.writeText(publicUrl)
-      setSuccessMessage('Enlace copiado al portapapeles')
+      setSuccessMessage('Enlace copiado')
+      toast.success('Copiado', 'El enlace está en el portapapeles')
     } catch {
       setErrorMessage('No se pudo copiar el enlace')
+      toast.error('No se pudo copiar el enlace')
     }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
   }
 
   return (
     <div className="space-y-6">
       {!canPublish && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-df-warning/30 bg-df-warning/10 p-4 text-sm text-amber-100">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <div>
             <p className="font-medium">No hay escenas activas</p>
             <p className="mt-1 text-amber-100/80">
@@ -190,83 +184,102 @@ export function PublishPanel({
       )}
 
       {errorMessage && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-          <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-df-error/30 bg-df-error/10 p-4 text-sm text-red-100"
+        >
+          <XCircle className="mt-0.5 size-4 shrink-0" />
           <p>{errorMessage}</p>
         </div>
       )}
 
       {successMessage && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-df-success/30 bg-df-success/10 p-4 text-sm text-emerald-100"
+        >
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="font-medium">{successMessage}</p>
+            <p className="font-medium">
+              {isPublished || lastPublicUrl
+                ? '¡Experiencia publicada!'
+                : successMessage}
+            </p>
+            <p className="mt-1 text-emerald-100/80">{successMessage}</p>
             {(isPublished || lastPublicUrl) && (
-              <a
-                href={publicUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1 text-emerald-200 underline-offset-2 hover:underline"
-              >
-                Abrir experiencia pública
-                <ExternalLink className="h-3 w-3" />
-              </a>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant="secondary" onClick={copyPublicUrl}>
+                  <Copy className="size-3.5" />
+                  Copiar
+                </Button>
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-md)] border border-df-success/40 bg-df-success/15 px-3 text-xs font-medium text-emerald-200 transition hover:bg-df-success/25"
+                >
+                  Abrir
+                  <ExternalLink className="size-3" />
+                </a>
+              </div>
             )}
           </div>
         </div>
       )}
 
-      <Card className="border-zinc-800 bg-zinc-900 p-6">
+      <Card className="p-5 sm:p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">
-            <div className="rounded-lg bg-zinc-800 p-3">
+            <div className="rounded-[var(--radius-lg)] bg-df-surface p-3 ring-1 ring-df-border">
               {isPublished ? (
-                <Globe className="h-6 w-6 text-green-500" />
+                <Globe className="size-6 text-df-success" />
               ) : (
-                <GlobeX className="h-6 w-6 text-zinc-500" />
+                <GlobeX className="size-6 text-df-muted-fg" />
               )}
             </div>
 
             <div className="min-w-0">
-              <h3 className="mb-1 text-lg font-semibold text-zinc-50">
-                {isPublished ? 'Publicado' : 'Sin publicar'}
-              </h3>
+              <div className="mb-1 flex flex-wrap items-center gap-2">
+                <h3 className="text-lg font-semibold text-df-fg">
+                  {isPublished ? 'Publicado' : 'Sin publicar'}
+                </h3>
+                <Badge variant={isPublished ? 'success' : 'default'} dot>
+                  {isPublished ? 'En línea' : 'Borrador'}
+                </Badge>
+              </div>
 
               {isPublished && activePublication ? (
                 <div className="space-y-2">
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-df-muted">
                     Versión {activePublication.version} ·{' '}
-                    {formatDate(activePublication.published_at)}
+                    {formatPublicationDate(activePublication.published_at)}
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
+                    <code className="max-w-full truncate rounded-[var(--radius-md)] border border-df-border bg-df-surface px-2.5 py-1.5 text-xs text-df-fg">
+                      {publicUrl}
+                    </code>
+                    <Button type="button" size="sm" variant="secondary" onClick={copyPublicUrl}>
+                      <Copy className="size-3.5" />
+                      Copiar
+                    </Button>
                     <a
                       href={publicUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex max-w-full items-center gap-1 truncate text-sm text-blue-400 hover:text-blue-300"
+                      className="inline-flex h-8 items-center gap-1 rounded-[var(--radius-md)] px-2 text-xs text-df-info hover:underline"
                     >
-                      {publicUrl}
-                      <ExternalLink className="h-3 w-3 shrink-0" />
+                      Abrir
+                      <ExternalLink className="size-3" />
                     </a>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={copyPublicUrl}
-                      className="h-8"
-                    >
-                      <Copy className="mr-1 h-3 w-3" />
-                      Copiar
-                    </Button>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-df-muted">
                   Este proyecto no está disponible públicamente todavía.
                 </p>
               )}
 
-              <p className="mt-2 text-xs text-zinc-500">
+              <p className="mt-2 text-xs text-df-muted-fg">
                 {enabledScenes} escena{enabledScenes === 1 ? '' : 's'} activa
                 {enabledScenes === 1 ? '' : 's'} lista{enabledScenes === 1 ? '' : 's'} para publicar
               </p>
@@ -275,8 +288,8 @@ export function PublishPanel({
 
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
             {pendingAction === 'publish' ? (
-              <div className="flex flex-wrap gap-2 rounded-xl border border-zinc-700 bg-zinc-950/60 p-3">
-                <p className="w-full text-sm text-zinc-300">
+              <div className="flex flex-wrap gap-2 rounded-[var(--radius-xl)] border border-df-border bg-df-surface p-3">
+                <p className="w-full text-sm text-df-muted">
                   {isPublished
                     ? '¿Actualizar la publicación con los cambios actuales?'
                     : '¿Publicar este proyecto y hacerlo visible en la web?'}
@@ -285,14 +298,9 @@ export function PublishPanel({
                   type="button"
                   onClick={handlePublish}
                   disabled={loading || !canPublish}
+                  loading={loading}
                 >
-                  {loading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : isPublished ? (
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Globe className="mr-2 h-4 w-4" />
-                  )}
+                  {isPublished ? <RefreshCw className="size-4" /> : <Globe className="size-4" />}
                   Confirmar
                 </Button>
                 <Button
@@ -305,17 +313,17 @@ export function PublishPanel({
                 </Button>
               </div>
             ) : pendingAction === 'unpublish' ? (
-              <div className="flex flex-wrap gap-2 rounded-xl border border-zinc-700 bg-zinc-950/60 p-3">
-                <p className="w-full text-sm text-zinc-300">
+              <div className="flex flex-wrap gap-2 rounded-[var(--radius-xl)] border border-df-border bg-df-surface p-3">
+                <p className="w-full text-sm text-df-muted">
                   ¿Despublicar? El enlace dejará de mostrar la experiencia.
                 </p>
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="destructive"
                   onClick={handleUnpublish}
                   disabled={loading}
+                  loading={loading}
                 >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Confirmar
                 </Button>
                 <Button
@@ -337,15 +345,16 @@ export function PublishPanel({
                     setPendingAction('publish')
                   }}
                   disabled={loading || !canPublish}
+                  className="min-h-11 sm:min-h-10"
                 >
                   {isPublished ? (
                     <>
-                      <RefreshCw className="mr-2 h-4 w-4" />
+                      <RefreshCw className="size-4" />
                       Actualizar publicación
                     </>
                   ) : (
                     <>
-                      <Globe className="mr-2 h-4 w-4" />
+                      <Globe className="size-4" />
                       Publicar
                     </>
                   )}
@@ -361,8 +370,9 @@ export function PublishPanel({
                       setPendingAction('unpublish')
                     }}
                     disabled={loading}
+                    className="min-h-11 sm:min-h-10"
                   >
-                    <GlobeX className="mr-2 h-4 w-4" />
+                    <GlobeX className="size-4" />
                     Despublicar
                   </Button>
                 )}
@@ -373,59 +383,65 @@ export function PublishPanel({
       </Card>
 
       {publications.length > 0 && (
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => setShowHistory(!showHistory)}
-          className="w-full"
-        >
-          <History className="mr-2 h-4 w-4" />
-          {showHistory ? 'Ocultar' : 'Ver'} historial de versiones ({publications.length})
-        </Button>
-      )}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-df-fg">Historial de versiones</h3>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <History className="size-3.5" />
+              {showHistory ? 'Ocultar' : 'Ver'} ({publications.length})
+            </Button>
+          </div>
 
-      {showHistory && publications.length > 0 && (
-        <div className="space-y-2">
-          {publications.map((pub) => (
-            <Card key={pub.id} className="border-zinc-800 bg-zinc-900 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    {pub.status === 'active' ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    ) : pub.status === 'inactive' ? (
-                      <XCircle className="h-4 w-4 text-red-500" />
-                    ) : (
-                      <Clock className="h-4 w-4 text-zinc-500" />
+          {showHistory && (
+            <div className="space-y-2">
+              {publications.map((pub) => (
+                <Card key={pub.id} className="p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {pub.status === 'active' ? (
+                        <CheckCircle2 className="size-4 text-df-success" />
+                      ) : pub.status === 'inactive' ? (
+                        <XCircle className="size-4 text-df-error" />
+                      ) : (
+                        <Clock className="size-4 text-df-muted-fg" />
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-df-fg">v{pub.version}</span>
+                          {pub.status === 'active' && (
+                            <Badge variant="success" dot>
+                              Activa
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-df-muted">
+                          {formatPublicationDate(pub.published_at)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {pub.status !== 'active' && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleRestore(pub.id, pub.version)}
+                        disabled={loading}
+                      >
+                        Restaurar
+                      </Button>
                     )}
-                    <span className="font-medium text-zinc-50">Versión {pub.version}</span>
                   </div>
-
-                  <div className="text-sm text-zinc-400">
-                    <p>{formatDate(pub.published_at)}</p>
-                    {pub.unpublished_at && (
-                      <p className="text-xs text-zinc-600">
-                        Despublicada: {formatDate(pub.unpublished_at)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {pub.status !== 'active' && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => handleRestore(pub.id, pub.version)}
-                    disabled={loading}
-                  >
-                    Restaurar
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))}
-        </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
       )}
     </div>
   )

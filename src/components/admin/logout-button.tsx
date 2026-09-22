@@ -4,8 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
 import { LogOut } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Tooltip } from '@/components/ui/tooltip'
 
-export function LogoutButton() {
+interface LogoutButtonProps {
+  compact?: boolean
+}
+
+export function LogoutButton({ compact }: LogoutButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -21,15 +27,24 @@ export function LogoutButton() {
     }
   }
 
-  return (
-    <button
+  const button = (
+    <Button
       type="button"
+      variant="outline"
+      size={compact ? 'icon-sm' : 'sm'}
       onClick={handleLogout}
-      disabled={loading}
-      className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-2 text-sm text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-800 hover:text-zinc-50 disabled:opacity-50"
+      loading={loading}
+      aria-label="Cerrar sesión"
+      className={compact ? undefined : 'w-full justify-start'}
     >
-      <LogOut className="h-4 w-4" />
-      <span className="hidden sm:inline">{loading ? 'Saliendo…' : 'Salir'}</span>
-    </button>
+      <LogOut />
+      {!compact && <span>{loading ? 'Saliendo…' : 'Cerrar sesión'}</span>}
+    </Button>
   )
+
+  if (compact) {
+    return <Tooltip content="Cerrar sesión">{button}</Tooltip>
+  }
+
+  return button
 }
