@@ -43,14 +43,14 @@ export function SceneListItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative flex items-center gap-2 rounded-lg border p-3 transition-colors ${
+      className={`group relative flex items-center gap-2 rounded-[var(--radius-lg)] border p-3 transition-colors ${
         isDragging
-          ? 'opacity-50'
+          ? 'opacity-50 ring-1 ring-df-primary/40'
           : ''
       } ${
         isSelected
-          ? 'bg-zinc-800 border-zinc-600'
-          : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'
+          ? 'border-df-primary/50 bg-df-primary/10 shadow-[0_0_0_1px_rgba(245,158,11,0.12)]'
+          : 'border-df-border bg-df-surface/50 hover:border-df-border-hover hover:bg-df-card'
       } ${
         !scene.enabled
           ? 'opacity-60'

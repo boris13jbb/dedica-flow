@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { Toaster } from '@/components/ui/toast'
 import './globals.css'
 
 const geistSans = Geist({
@@ -13,8 +14,11 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'DedicaStudio',
-  description: 'Plataforma para crear experiencias audiovisuales únicas',
+  title: {
+    default: 'DedicaFlow',
+    template: '%s · DedicaFlow',
+  },
+  description: 'Convierte emociones en experiencias inolvidables.',
   icons: {
     icon: '/favicon.ico',
   },
@@ -35,6 +39,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <Toaster />
       </body>
     </html>
   )

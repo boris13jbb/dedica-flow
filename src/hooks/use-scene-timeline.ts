@@ -79,6 +79,5 @@ export function useSceneTimeline(config: ExperienceConfig | null) {
         rafRef.current = null
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- configKey estabiliza el contenido relevante
   }, [configKey, config, currentSceneIndex, isPlaying, nextScene, setSceneProgress])
 }

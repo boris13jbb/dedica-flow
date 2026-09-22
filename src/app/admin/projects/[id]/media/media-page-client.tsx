@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { ImageIcon } from 'lucide-react'
 import { MediaLibrary } from '@/components/media'
 import { ProjectAudioPanel } from '@/components/media/project-audio-panel'
+import { Badge } from '@/components/ui/badge'
 import type { AudioConfig } from '@/types'
 
 interface Asset {
@@ -33,8 +34,7 @@ export function MediaPageClient({
   const videoCount = assets.filter((a) => a.type === 'video').length
 
   return (
-    <div className="space-y-10">
-      {/* SECCIÓN A — Audio (destacada) */}
+    <div className="space-y-8">
       <ProjectAudioPanel
         projectId={projectId}
         assets={assets}
@@ -42,43 +42,32 @@ export function MediaPageClient({
         onRefresh={refresh}
       />
 
-      {/* SECCIÓN B — Biblioteca general */}
       <section
         aria-labelledby="biblioteca-title"
-        className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40"
+        className="overflow-hidden rounded-[var(--radius-xl)] border border-df-border bg-df-card"
       >
-        <div className="border-b border-zinc-800 px-5 py-4 sm:px-6">
+        <div className="border-b border-df-border px-5 py-4 sm:px-6">
           <div className="flex flex-wrap items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-sky-300">
-              <ImageIcon className="h-5 w-5" />
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-df-info/15 text-df-info">
+              <ImageIcon className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium uppercase tracking-wider text-sky-300/80">
-                Apartado de medios
+              <p className="text-xs font-medium uppercase tracking-wider text-df-info/80">
+                Biblioteca de medios
               </p>
-              <h2
-                id="biblioteca-title"
-                className="text-xl font-semibold text-zinc-50"
-              >
-                Biblioteca de imágenes y archivos
+              <h2 id="biblioteca-title" className="text-xl font-semibold text-df-fg">
+                Imágenes, videos y audios
               </h2>
-              <p className="mt-1 text-sm text-zinc-400">
-                Aquí subes fotos y videos para las escenas. El audio de fondo se
-                gestiona en el apartado de arriba.
+              <p className="mt-1 text-sm text-df-muted">
+                Sube fotos y videos para las escenas. El audio de fondo se gestiona arriba.
               </p>
             </div>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300">
-              {imageCount} imágenes
-            </span>
-            <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300">
-              {audioCount} audios
-            </span>
-            <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300">
-              {videoCount} videos
-            </span>
+            <Badge variant="default">{imageCount} imágenes</Badge>
+            <Badge variant="default">{audioCount} audios</Badge>
+            <Badge variant="default">{videoCount} videos</Badge>
           </div>
         </div>
 
@@ -87,6 +76,7 @@ export function MediaPageClient({
             projectId={projectId}
             assets={assets}
             onRefresh={refresh}
+            showTabs
           />
         </div>
       </section>

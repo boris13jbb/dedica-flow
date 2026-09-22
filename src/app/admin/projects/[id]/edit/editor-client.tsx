@@ -1,10 +1,14 @@
 'use client'
 
 import { useEffect, useCallback, useState, useRef } from 'react'
-import { ArrowLeft, Save, Loader2, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, Eye, Rocket, Clapperboard, MonitorPlay, SlidersHorizontal } from 'lucide-react'
 import Link from 'next/link'
 import { useShallow } from 'zustand/react/shallow'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Logo } from '@/components/brand/logo'
+import { Breadcrumbs } from '@/components/layout/breadcrumbs'
+import { toast } from '@/components/ui/toast'
+import { cn } from '@/lib/utils'
 import { useEditorStore, useRendererStore } from '@/stores'
 import { SceneList } from '@/components/editor/scene-list'
 import { PreviewPanel } from '@/components/editor/preview-panel'
@@ -52,7 +56,8 @@ interface EditorClientProps {
 
 export function EditorClient({ project, initialScenes }: EditorClientProps) {
   const hydratedRef = useRef(false)
-  const [showInspector, setShowInspector] = useState(false)
+  /** Vista activa en viewport < lg (móvil/tablet): no mostrar 3 columnas */
+  const [mobilePane, setMobilePane] = useState<'scenes' | 'preview' | 'props'>('preview')
   
   const {
     scenes,
@@ -72,6 +77,10 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
     setLastSaved,
     setPreviewDevice,
   } = useEditorStore()
+
+  // Mientras el store no corresponde a este proyecto, mostrar escenas del servidor.
+  const storeProjectId = useEditorStore((s) => s.project?.id)
+  const visibleScenes = storeProjectId === project.id ? scenes : initialScenes
 
   const { goToScene } = useRendererStore(
     useShallow((s) => ({ goToScene: s.goToScene }))
@@ -101,7 +110,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
     }
   }, [selectedSceneId, goToScene])
 
-  const selectedScene = scenes.find((s) => s.id === selectedSceneId)
+  const selectedScene = visibleScenes.find((s) => s.id === selectedSceneId)
 
   const handleSave = useCallback(async () => {
     const state = useEditorStore.getState()
@@ -122,9 +131,8 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
         setLastSaved(new Date())
       }
       // Evitar router.refresh() aquí: reseteaba los inputs a mitad de escritura
-    } catch (error) {
-      console.error('Error saving:', error)
-      alert('Error al guardar cambios')
+    } catch {
+      toast.error('Error al guardar', 'No se pudieron guardar los cambios. Inténtalo de nuevo.')
     } finally {
       setSaving(false)
     }
@@ -157,9 +165,8 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
 
       setScenes([...scenes, newScene as Scene])
       selectScene((newScene as { id: string }).id)
-    } catch (error) {
-      console.error('Error creating scene:', error)
-      alert('Error al crear escena')
+    } catch {
+      toast.error('Error al crear escena')
     }
   }
 
@@ -169,9 +176,8 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
     try {
       await deleteScene(project.id, sceneId)
       removeScene(sceneId)
-    } catch (error) {
-      console.error('Error deleting scene:', error)
-      alert('Error al eliminar escena')
+    } catch {
+      toast.error('Error al eliminar escena')
     }
   }
 
@@ -200,9 +206,8 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
           position: i,
         }))
       )
-    } catch (error) {
-      console.error('Error duplicating scene:', error)
-      alert('Error al duplicar escena')
+    } catch {
+      toast.error('Error al duplicar escena')
     }
   }
 
@@ -224,7 +229,9 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
 
   const handleSelectScene = (sceneId: string | null) => {
     selectScene(sceneId)
-    if (sceneId) setShowInspector(true)
+    if (sceneId) {
+      setMobilePane('props')
+    }
   }
 
   const inspectorBody = selectedScene ? (
@@ -240,11 +247,11 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
       onChange={handleSceneConfigChange}
     />
   ) : (
-    <div className="space-y-3 p-4 text-sm text-zinc-400">
+    <div className="space-y-3 p-4 text-sm text-df-muted">
       <p>Selecciona una escena a la izquierda para editar textos y opciones.</p>
       <Link
         href={`/admin/projects/${project.id}/media#audio-experiencia`}
-        className="inline-flex rounded-lg border border-amber-500/40 bg-amber-400/10 px-3 py-2 text-amber-200 transition hover:bg-amber-400/15"
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
       >
         Ir a insertar audio →
       </Link>
@@ -252,86 +259,100 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
   )
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-950">
-      <header className="shrink-0 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
-        <div className="flex h-14 items-center justify-between gap-3 px-4">
-          <div className="flex min-w-0 items-center gap-3">
+    <div className="flex h-screen flex-col bg-df-bg text-df-fg">
+      <header className="shrink-0 border-b border-df-border bg-df-bg/90 backdrop-blur-xl">
+        <div className="flex h-14 items-center justify-between gap-3 px-3 sm:px-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link
               href="/admin"
-              className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-50"
+              className="rounded-[var(--radius-md)] p-2 text-df-muted transition-colors hover:bg-df-surface hover:text-df-fg"
               title="Volver al panel"
+              aria-label="Volver al panel"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="size-5" />
             </Link>
-
+            <Link href="/admin" className="hidden shrink-0 sm:block" aria-label="DedicaFlow">
+              <Logo size="sm" showWordmark={false} />
+            </Link>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-amber-400/90">
-                Paso 1 · Escenas
-              </p>
-              <h1 className="truncate text-sm font-semibold text-zinc-50">
+              <Breadcrumbs
+                items={[
+                  { label: 'Experiencias', href: '/admin' },
+                  { label: project.name || 'Proyecto' },
+                ]}
+                className="hidden md:block"
+              />
+              <h1 className="truncate text-sm font-semibold text-df-fg md:hidden">
                 {project.name}
               </h1>
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden text-xs text-zinc-400 sm:block">
+            <div className="hidden text-xs text-df-muted sm:block" aria-live="polite">
               {isSaving ? (
-                <span className="flex items-center gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Guardando...
+                <span className="flex items-center gap-1.5 text-df-primary-light">
+                  <Loader2 className="size-3 animate-spin" />
+                  Guardando…
                 </span>
               ) : isDirty ? (
                 <span>Cambios pendientes</span>
               ) : lastSaved ? (
                 <SaveStatus lastSaved={lastSaved} />
               ) : (
-                <span>Guardado</span>
+                <span className="text-df-success">Guardado automáticamente</span>
               )}
             </div>
 
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className="lg:hidden"
-              onClick={() => setShowInspector(true)}
+            <Link
+              href={`/p/${project.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'hidden sm:inline-flex')}
             >
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              Textos
-            </Button>
+              <Eye className="size-3.5" />
+              Vista previa
+            </Link>
+
+            <Link
+              href={`/admin/projects/${project.id}/publish`}
+              className={cn(buttonVariants({ variant: 'primary', size: 'sm' }), 'hidden sm:inline-flex')}
+            >
+              <Rocket className="size-3.5" />
+              Publicar
+            </Link>
 
             <Button
               type="button"
               onClick={() => void handleSave()}
               disabled={!isDirty || isSaving}
               size="sm"
-              className="bg-zinc-100 text-zinc-950 hover:bg-white"
+              variant="secondary"
+              loading={isSaving}
             >
-              <Save className="mr-2 h-4 w-4" />
-              Guardar
+              <Save className="size-3.5" />
+              <span className="hidden sm:inline">Guardar</span>
             </Button>
           </div>
         </div>
 
-        <div className="border-t border-zinc-800/80 px-3 py-2 sm:px-4">
-          <ProjectWorkspaceNav projectId={project.id} />
+        <div className="border-t border-df-border/80 px-3 py-2 sm:px-4">
+          <ProjectWorkspaceNav projectId={project.id} variant="tabs" />
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        <aside className="flex w-64 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900/40 sm:w-72 lg:w-80">
-          <div className="border-b border-zinc-800 px-4 py-3">
-            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-              Lista de escenas
+      {/* Desktop / tablet grande: 3 columnas */}
+      <div className="hidden min-h-0 flex-1 overflow-hidden lg:flex">
+        <aside className="flex w-[280px] shrink-0 flex-col border-r border-df-border bg-df-bg-secondary xl:w-[290px]">
+          <div className="border-b border-df-border px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-wider text-df-muted-fg">
+              Escenas
             </p>
-            <p className="text-sm text-zinc-300">
-              Ordena y activa cada momento
-            </p>
+            <p className="text-sm text-df-muted">Ordena y activa cada momento</p>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">
             <SceneList
-              scenes={scenes}
+              scenes={visibleScenes}
               selectedSceneId={selectedSceneId}
               onSelectScene={handleSelectScene}
               onReorderScenes={handleReorderScenes}
@@ -343,65 +364,111 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
           </div>
         </aside>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 bg-black">
           <PreviewPanel
             device={previewDevice}
             onDeviceChange={setPreviewDevice}
             projectName={project.name}
             projectSlug={project.slug}
-            scenes={scenes}
+            scenes={visibleScenes}
           />
         </div>
 
-        {/* Panel de propiedades siempre disponible en desktop */}
-        <aside className="hidden w-80 shrink-0 flex-col border-l border-zinc-800 bg-zinc-900/40 lg:flex xl:w-96">
-          <div className="border-b border-zinc-800 px-4 py-3">
-            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+        <aside className="flex w-[320px] shrink-0 flex-col border-l border-df-border bg-df-bg-secondary xl:w-[340px]">
+          <div className="border-b border-df-border px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-wider text-df-muted-fg">
               Propiedades
             </p>
-            <p className="text-sm text-zinc-300">
+            <p className="text-sm text-df-muted">
               {selectedScene
                 ? `Editando: ${selectedScene.name}`
                 : 'Selecciona una escena'}
             </p>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">{inspectorBody}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">{inspectorBody}</div>
         </aside>
       </div>
 
-      {/* Drawer móvil/tablet: campos de texto editables */}
-      {showInspector && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            aria-label="Cerrar panel"
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setShowInspector(false)}
-          />
-          <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl border border-zinc-700 bg-zinc-950 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-                  Propiedades
-                </p>
-                <p className="text-sm text-zinc-200">
+      {/* Móvil / tablet: una sola vista + tabs inferiores */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {mobilePane === 'scenes' && (
+            <div className="flex h-full flex-col bg-df-bg-secondary">
+              <div className="border-b border-df-border px-4 py-3">
+                <p className="text-sm font-medium text-df-fg">Escenas</p>
+                <p className="text-xs text-df-muted">Toca una escena para editarla</p>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">
+                <SceneList
+                  scenes={visibleScenes}
+                  selectedSceneId={selectedSceneId}
+                  onSelectScene={handleSelectScene}
+                  onReorderScenes={handleReorderScenes}
+                  onToggleEnabled={handleToggleEnabled}
+                  onDuplicateScene={handleDuplicateScene}
+                  onDeleteScene={handleDeleteScene}
+                  onAddScene={handleAddScene}
+                />
+              </div>
+            </div>
+          )}
+          {mobilePane === 'preview' && (
+            <div className="h-full bg-black">
+              <PreviewPanel
+                device={previewDevice}
+                onDeviceChange={setPreviewDevice}
+                projectName={project.name}
+                projectSlug={project.slug}
+                scenes={visibleScenes}
+              />
+            </div>
+          )}
+          {mobilePane === 'props' && (
+            <div className="flex h-full flex-col bg-df-bg-secondary">
+              <div className="border-b border-df-border px-4 py-3">
+                <p className="text-sm font-medium text-df-fg">Ajustes</p>
+                <p className="text-xs text-df-muted">
                   {selectedScene
                     ? `Editando: ${selectedScene.name}`
-                    : 'Selecciona una escena'}
+                    : 'Selecciona una escena primero'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowInspector(false)}
-                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">{inspectorBody}</div>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">{inspectorBody}</div>
-          </div>
+          )}
         </div>
-      )}
+
+        <nav
+          aria-label="Vistas del editor"
+          className="flex shrink-0 border-t border-df-border bg-df-bg-secondary pb-[env(safe-area-inset-bottom)]"
+        >
+          {(
+            [
+              { id: 'scenes' as const, label: 'Escenas', icon: Clapperboard },
+              { id: 'preview' as const, label: 'Preview', icon: MonitorPlay },
+              { id: 'props' as const, label: 'Ajustes', icon: SlidersHorizontal },
+            ] as const
+          ).map((tab) => {
+            const Icon = tab.icon
+            const active = mobilePane === tab.id
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                aria-current={active ? 'page' : undefined}
+                onClick={() => setMobilePane(tab.id)}
+                className={cn(
+                  'flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 px-2 py-2 text-[11px] font-medium transition-colors',
+                  active ? 'text-df-primary' : 'text-df-muted hover:text-df-fg'
+                )}
+              >
+                <Icon className="size-5" />
+                {tab.label}
+              </button>
+            )
+          })}
+        </nav>
+      </div>
     </div>
   )
 }

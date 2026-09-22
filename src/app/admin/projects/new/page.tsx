@@ -3,6 +3,8 @@ import { ArrowLeft } from 'lucide-react'
 import { requireAuth, getOrCreateUserWorkspace } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AdminShell } from '@/components/admin/admin-shell'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { createProject } from './actions'
 import { NewProjectForm } from './new-project-form'
 import type { Template } from '@/types'
@@ -20,7 +22,7 @@ export default async function NewProjectPage({
 
   if (!workspace) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-zinc-50">
+      <div className="flex min-h-screen items-center justify-center bg-df-bg p-6 text-df-fg">
         Error al cargar workspace
       </div>
     )
@@ -39,14 +41,18 @@ export default async function NewProjectPage({
   return (
     <AdminShell
       email={user.email}
-      title="Nuevo proyecto"
-      subtitle="Define el nombre, la URL pública y la plantilla de partida."
+      title="Crear nueva experiencia"
+      subtitle="Configura los detalles iniciales de tu experiencia."
+      breadcrumbs={[
+        { label: 'Tus experiencias', href: '/admin' },
+        { label: 'Nuevo proyecto' },
+      ]}
       actions={
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-800 hover:text-zinc-50"
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="size-4" />
           Volver
         </Link>
       }

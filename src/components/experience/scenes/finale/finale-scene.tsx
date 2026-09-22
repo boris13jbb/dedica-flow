@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRendererStore } from '@/stores'
 import type { FinaleSceneConfig } from '@/components/experience/registry'
 
@@ -10,10 +10,16 @@ interface FinaleSceneProps {
 }
 
 export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
-  const [isVisible, setIsVisible] = useState(true)
+  const [exiting, setExiting] = useState(false)
+  const [prevPlaying, setPrevPlaying] = useState(isPlaying)
   const { restart } = useRendererStore()
 
   const finaleConfig = config as unknown as FinaleSceneConfig
+
+  if (isPlaying !== prevPlaying) {
+    setPrevPlaying(isPlaying)
+    setExiting(false)
+  }
 
   const [particles] = useState(() => {
     return Array.from({ length: 50 }).map(() => ({
@@ -24,17 +30,8 @@ export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
     }))
   })
 
-  useEffect(() => {
-    if (isPlaying) {
-      setIsVisible(false)
-      const timer = setTimeout(() => setIsVisible(true), 30)
-      return () => clearTimeout(timer)
-    }
-    setIsVisible(true)
-  }, [isPlaying])
-
   const handleRepeat = () => {
-    setIsVisible(false)
+    setExiting(true)
     setTimeout(() => {
       restart()
     }, 500)
@@ -49,15 +46,16 @@ export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center bg-zinc-950 relative"
-      style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 1000ms' }}
+      key={isPlaying ? 'playing' : 'paused'}
+      className="relative flex h-full w-full items-center justify-center bg-zinc-950"
+      style={{ opacity: exiting ? 0 : 1, transition: 'opacity 1000ms' }}
     >
       {finaleConfig.background === 'stars' && (
         <div className="absolute inset-0 overflow-hidden">
           {particles.map((particle, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
+              className="absolute h-1 w-1 animate-pulse rounded-full bg-white"
               style={{
                 left: `${particle.left}%`,
                 top: `${particle.top}%`,
@@ -77,23 +75,23 @@ export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
         />
       )}
 
-      <div className={`text-center max-w-2xl px-8 relative z-10 ${animationClass}`}>
-        <p className="text-3xl text-white mb-6 leading-relaxed">
+      <div className={`relative z-10 max-w-2xl px-8 text-center ${animationClass}`}>
+        <p className="mb-6 text-3xl leading-relaxed text-white">
           {finaleConfig.message || 'Gracias por acompañarme'}
         </p>
 
         {finaleConfig.signature && (
-          <p className="text-xl text-zinc-300 mb-2">{finaleConfig.signature}</p>
+          <p className="mb-2 text-xl text-zinc-300">{finaleConfig.signature}</p>
         )}
 
         {finaleConfig.date && (
-          <p className="text-sm text-zinc-500 mb-12">{finaleConfig.date}</p>
+          <p className="mb-12 text-sm text-zinc-500">{finaleConfig.date}</p>
         )}
 
         <button
           type="button"
           onClick={handleRepeat}
-          className="mt-8 px-6 py-3 bg-white text-zinc-900 rounded-full font-medium transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-white/50"
+          className="mt-8 rounded-full bg-white px-6 py-3 font-medium text-zinc-900 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-white/50"
         >
           {finaleConfig.repeatButton || 'Ver de nuevo'}
         </button>

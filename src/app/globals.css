@@ -1,5 +1,85 @@
 @import "tailwindcss";
 
+/* ─── DedicaFlow Design Tokens ─── */
+:root {
+  --background: #0a0a0b;
+  --surface: #101012;
+  --surface-elevated: #161619;
+  --card: #18181b;
+  --card-hover: #202024;
+  --border: #27272a;
+  --border-hover: #3f3f46;
+
+  --foreground: #fafafa;
+  --muted-foreground: #a1a1aa;
+  --subtle-foreground: #71717a;
+
+  /* Aliases usados por utilidades existentes */
+  --background-secondary: var(--surface);
+  --muted: var(--muted-foreground);
+  --muted-foreground-legacy: var(--subtle-foreground);
+
+  --primary: #f59e0b;
+  --primary-light: #fbbf24;
+  --primary-hover: #fcd34d;
+  --primary-foreground: #0a0a0b;
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 24px rgba(245, 158, 11, 0.18);
+
+  --sidebar-width: 240px;
+  --sidebar-collapsed: 72px;
+  --header-height: 56px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+}
+
+@theme {
+  --color-df-bg: var(--background);
+  --color-df-bg-secondary: var(--surface);
+  --color-df-surface: var(--surface-elevated);
+  --color-df-card: var(--card);
+  --color-df-card-hover: var(--card-hover);
+  --color-df-border: var(--border);
+  --color-df-border-hover: var(--border-hover);
+  --color-df-fg: var(--foreground);
+  --color-df-muted: var(--muted-foreground);
+  --color-df-muted-fg: var(--subtle-foreground);
+  --color-df-primary: var(--primary);
+  --color-df-primary-light: var(--primary-light);
+  --color-df-primary-hover: var(--primary-hover);
+  --color-df-primary-fg: var(--primary-foreground);
+  --color-df-success: var(--success);
+  --color-df-warning: var(--warning);
+  --color-df-error: var(--error);
+  --color-df-info: var(--info);
+
+  --radius-df-sm: var(--radius-sm);
+  --radius-df-md: var(--radius-md);
+  --radius-df-lg: var(--radius-lg);
+  --radius-df-xl: var(--radius-xl);
+  --radius-df-2xl: var(--radius-2xl);
+
+  --shadow-df-elevated: var(--shadow-elevated);
+  --shadow-df-glow: var(--shadow-glow);
+
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -12,11 +92,52 @@ body {
 }
 
 body {
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-  background: #09090b;
-  color: #fafafa;
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Focus ring utility for accessibility */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* App background atmosphere */
+.df-atmosphere {
+  background:
+    radial-gradient(ellipse at top, #1c1917 0%, #09090b 45%, #000000 100%);
+}
+
+.df-atmosphere::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(245, 158, 11, 0.08), transparent 40%),
+    radial-gradient(circle at 85% 5%, rgba(245, 158, 11, 0.05), transparent 30%);
+}
+
+/* Scrollbar subtle */
+.df-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.df-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.df-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+.df-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* Experience animations (public renderer — do not remove) */
 @keyframes experience-fade-in {
   from {
     opacity: 0;
@@ -111,4 +232,33 @@ body {
 
 .animate-finale-slide {
   animation: finale-slide 1.5s ease-out;
+}
+
+@keyframes df-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes df-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes df-skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-df-fade-in {
+  animation: df-fade-in var(--duration-normal) var(--ease-out);
+}
+
+.animate-df-slide-up {
+  animation: df-slide-up var(--duration-normal) var(--ease-out);
 }

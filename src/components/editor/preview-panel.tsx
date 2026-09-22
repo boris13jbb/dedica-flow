@@ -5,6 +5,8 @@ import { useShallow } from 'zustand/react/shallow'
 import { Monitor, Smartphone, Tablet, Play, Pause, RotateCcw } from 'lucide-react'
 import { ExperienceRenderer } from '@/components/experience/renderer'
 import { useRendererStore } from '@/stores'
+import { IconButton } from '@/components/ui/icon-button'
+import { cn } from '@/lib/utils'
 import type { Scene } from '@/types'
 import type { ExperienceConfig } from '@/types'
 
@@ -32,7 +34,6 @@ export function PreviewPanel({
     }))
   )
 
-  // Estabilizar referencia: un objeto nuevo cada render provocaba bucle setConfig (#185)
   const experienceConfig: ExperienceConfig = useMemo(
     () => ({
       projectId: scenes[0]?.project_id || '',
@@ -62,96 +63,70 @@ export function PreviewPanel({
 
   const hasScenes = scenes.length > 0 && scenes.some((s) => s.enabled)
 
+  const deviceBtn = (id: typeof device, label: string, Icon: typeof Monitor) => (
+    <IconButton
+      type="button"
+      label={label}
+      size="sm"
+      variant={device === id ? 'secondary' : 'ghost'}
+      onClick={() => onDeviceChange(id)}
+      className={cn(device === id && 'bg-df-card text-df-fg')}
+    >
+      <Icon />
+    </IconButton>
+  )
+
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-zinc-50">Preview</h2>
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-2 border-b border-df-border px-3 py-2.5 sm:px-4">
+        <h2 className="text-sm font-semibold text-df-fg sm:text-base">Vista previa</h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {hasScenes && (
-            <div className="flex items-center gap-1 bg-zinc-900 rounded-lg p-1">
-              <button
+            <div className="flex items-center gap-0.5 rounded-[var(--radius-lg)] border border-df-border bg-df-surface p-0.5">
+              <IconButton
                 type="button"
+                label="Reiniciar"
+                size="sm"
+                variant="ghost"
                 onClick={restart}
-                className="p-2 rounded transition-colors text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800"
-                title="Reiniciar"
               >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-
-              <button
+                <RotateCcw />
+              </IconButton>
+              <IconButton
                 type="button"
+                label={isPlaying ? 'Pausar' : 'Reproducir'}
+                size="sm"
+                variant="ghost"
                 onClick={isPlaying ? pause : play}
-                className="p-2 rounded transition-colors text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800"
-                title={isPlaying ? 'Pausar' : 'Reproducir'}
               >
-                {isPlaying ? (
-                  <Pause className="w-4 h-4" />
-                ) : (
-                  <Play className="w-4 h-4" />
-                )}
-              </button>
+                {isPlaying ? <Pause /> : <Play />}
+              </IconButton>
             </div>
           )}
 
-          <div className="flex items-center gap-1 bg-zinc-900 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => onDeviceChange('desktop')}
-              className={`p-2 rounded transition-colors ${
-                device === 'desktop'
-                  ? 'bg-zinc-700 text-zinc-50'
-                  : 'text-zinc-400 hover:text-zinc-50'
-              }`}
-              title="Desktop"
-            >
-              <Monitor className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onDeviceChange('tablet')}
-              className={`p-2 rounded transition-colors ${
-                device === 'tablet'
-                  ? 'bg-zinc-700 text-zinc-50'
-                  : 'text-zinc-400 hover:text-zinc-50'
-              }`}
-              title="Tablet"
-            >
-              <Tablet className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onDeviceChange('mobile')}
-              className={`p-2 rounded transition-colors ${
-                device === 'mobile'
-                  ? 'bg-zinc-700 text-zinc-50'
-                  : 'text-zinc-400 hover:text-zinc-50'
-              }`}
-              title="Mobile"
-            >
-              <Smartphone className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-0.5 rounded-[var(--radius-lg)] border border-df-border bg-df-surface p-0.5">
+            {deviceBtn('desktop', 'Escritorio', Monitor)}
+            {deviceBtn('tablet', 'Tablet', Tablet)}
+            {deviceBtn('mobile', 'Móvil', Smartphone)}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 bg-zinc-900/50 p-8 flex items-center justify-center overflow-hidden">
+      <div className="flex flex-1 items-center justify-center overflow-hidden bg-black p-3 sm:p-6">
         {!hasScenes ? (
-          <div className="text-center text-zinc-400">
+          <div className="text-center text-df-muted">
             <p className="mb-2">No hay escenas habilitadas</p>
-            <p className="text-sm">Añade escenas para ver el preview</p>
+            <p className="text-sm text-df-muted-fg">Añade o activa escenas para ver el preview</p>
           </div>
         ) : (
           <div
-            className={`bg-zinc-950 rounded-lg shadow-2xl overflow-hidden transition-all duration-300 ${
-              device === 'desktop'
-                ? 'w-full h-full'
-                : device === 'tablet'
-                  ? 'w-[768px] h-[1024px] max-w-full max-h-full'
-                  : 'w-[375px] h-[667px] max-w-full max-h-full'
-            }`}
+            className={cn(
+              'overflow-hidden rounded-[var(--radius-lg)] bg-df-bg shadow-[var(--shadow-elevated)] transition-all duration-300',
+              device === 'desktop' && 'h-full w-full',
+              device === 'tablet' && 'h-[1024px] max-h-full w-[768px] max-w-full',
+              device === 'mobile' && 'h-[667px] max-h-full w-[375px] max-w-full'
+            )}
           >
             <ExperienceRenderer
               config={experienceConfig}

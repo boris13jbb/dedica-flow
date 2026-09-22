@@ -5,6 +5,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { AdminShell } from '@/components/admin/admin-shell'
 import { ProjectWorkspaceNav } from '@/components/admin/project-workspace-nav'
 import { PublishPanel } from '@/components/publish'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { getAppUrl } from '@/lib/app-url'
 
 export default async function PublishPage({
@@ -18,7 +20,7 @@ export default async function PublishPage({
 
   if (!workspace) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-zinc-400">
+      <div className="flex min-h-screen items-center justify-center bg-df-bg p-6 text-df-muted">
         Error al obtener workspace
       </div>
     )
@@ -42,7 +44,7 @@ export default async function PublishPage({
 
   if (!project) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-zinc-400">
+      <div className="flex min-h-screen items-center justify-center bg-df-bg p-6 text-df-muted">
         Proyecto no encontrado
       </div>
     )
@@ -57,40 +59,35 @@ export default async function PublishPage({
   return (
     <AdminShell
       email={user.email}
-      title={project.name}
-      subtitle="Paso 3 · Publica y comparte el enlace de la experiencia"
+      title="Publicar experiencia"
+      subtitle="Comparte el enlace público y gestiona versiones."
+      breadcrumbs={[
+        { label: 'Experiencias', href: '/admin' },
+        { label: project.name, href: `/admin/projects/${id}/edit` },
+        { label: 'Publicar' },
+      ]}
       actions={
         <Link
           href={`/admin/projects/${id}/edit`}
-          className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 transition hover:bg-zinc-800 hover:text-zinc-50"
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
         >
-          <ArrowLeft className="h-4 w-4" />
-          Volver al editor
+          <ArrowLeft className="size-4" />
+          Editor
         </Link>
       }
     >
-      <div className="mb-8 space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-          Flujo del proyecto · /p/{project.slug}
-        </p>
+      <div className="mb-8 space-y-3">
+        <p className="text-xs text-df-muted-fg">/p/{project.slug}</p>
         <ProjectWorkspaceNav projectId={id} />
       </div>
 
-      <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 sm:p-6">
-        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-emerald-300/80">
-          Apartado de publicación
-        </p>
-        <h2 className="mb-6 text-xl font-semibold text-zinc-50">
-          Estado y enlace público
-        </h2>
-        <PublishPanel
-          projectId={id}
-          projectSlug={project.slug.trim()}
-          projectStatus={project.status}
-          publicBaseUrl={getAppUrl()}
-          enabledScenes={enabledScenes ?? 0}
-        />
-      </section>
+      <PublishPanel
+        projectId={id}
+        projectSlug={project.slug.trim()}
+        projectStatus={project.status}
+        publicBaseUrl={getAppUrl()}
+        enabledScenes={enabledScenes ?? 0}
+      />
     </AdminShell>
   )
 }

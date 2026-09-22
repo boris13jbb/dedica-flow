@@ -10,43 +10,41 @@ interface MessageSceneProps {
 }
 
 export function MessageScene({ config, isPlaying }: MessageSceneProps) {
-  const [isVisible, setIsVisible] = useState(true)
+  const [exiting, setExiting] = useState(false)
   const [shouldAdvance, setShouldAdvance] = useState(false)
+  const [prevPlaying, setPrevPlaying] = useState(isPlaying)
   const { nextScene } = useRendererStore()
 
   const messageConfig = config as unknown as MessageSceneConfig
 
+  if (isPlaying !== prevPlaying) {
+    setPrevPlaying(isPlaying)
+    setExiting(false)
+    setShouldAdvance(false)
+  }
+
   useEffect(() => {
-    if (isPlaying) {
-      setIsVisible(false)
-      const visTimer = setTimeout(() => setIsVisible(true), 30)
-
-      if (messageConfig.animation === 'fade' || messageConfig.animation === 'slide') {
-        const advanceTimer = setTimeout(() => {
-          setShouldAdvance(true)
-        }, (messageConfig.duration || 1500) + 3000)
-
-        return () => {
-          clearTimeout(visTimer)
-          clearTimeout(advanceTimer)
-        }
-      }
-
-      return () => clearTimeout(visTimer)
+    if (!isPlaying) return
+    if (messageConfig.animation !== 'fade' && messageConfig.animation !== 'slide') {
+      return
     }
 
-    setIsVisible(true)
+    const advanceTimer = setTimeout(() => {
+      setShouldAdvance(true)
+    }, (messageConfig.duration || 1500) + 3000)
+
+    return () => clearTimeout(advanceTimer)
   }, [isPlaying, messageConfig.animation, messageConfig.duration])
 
   useEffect(() => {
-    if (shouldAdvance) {
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-        setTimeout(() => {
-          nextScene()
-        }, 500)
-      }, 0)
-      return () => clearTimeout(timer)
+    if (!shouldAdvance) return
+
+    const exitTimer = setTimeout(() => setExiting(true), 0)
+    const nextTimer = setTimeout(() => nextScene(), 500)
+
+    return () => {
+      clearTimeout(exitTimer)
+      clearTimeout(nextTimer)
     }
   }, [shouldAdvance, nextScene])
 
@@ -111,9 +109,10 @@ export function MessageScene({ config, isPlaying }: MessageSceneProps) {
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center bg-zinc-950 px-8 cursor-pointer"
+      key={isPlaying ? 'playing' : 'paused'}
+      className="flex h-full w-full cursor-pointer items-center justify-center bg-zinc-950 px-8"
       onClick={handleClick}
-      style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 500ms' }}
+      style={{ opacity: exiting ? 0 : 1, transition: 'opacity 500ms' }}
     >
       <div className={`${maxWidthClass} w-full`}>
         <p

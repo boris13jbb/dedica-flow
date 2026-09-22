@@ -1,19 +1,21 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useFormStatus } from 'react-dom'
-import { Button } from '@/components/ui/button'
+import { Check, LayoutTemplate } from 'lucide-react'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
+import { appConfig } from '@/config'
 
 function SubmitButton({ disabled }: { disabled?: boolean }) {
   const { pending } = useFormStatus()
   return (
-    <Button
-      type="submit"
-      disabled={disabled || pending}
-      className="h-11 sm:flex-1 bg-amber-400 text-zinc-950 hover:bg-amber-300 disabled:opacity-60"
-    >
+    <Button type="submit" disabled={disabled || pending} loading={pending} className="h-11 sm:flex-1">
       {pending ? 'Creando proyecto…' : 'Crear y abrir editor'}
     </Button>
   )
@@ -61,31 +63,35 @@ export function NewProjectForm({
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState(templates[0]?.id ?? '')
 
   const errorMessage = useMemo(
     () => (errorCode ? ERROR_MESSAGES[errorCode] || ERROR_MESSAGES.create : null),
     [errorCode]
   )
 
+  const publicPreview = `${appConfig.url}/p/${slug || 'tu-experiencia'}`
+
   return (
     <form action={action} className="mx-auto max-w-3xl space-y-6">
       {errorMessage && (
-        <div className="rounded-xl border border-red-900/50 bg-red-950/40 px-4 py-3 text-sm text-red-200">
+        <div
+          role="alert"
+          className="rounded-[var(--radius-lg)] border border-df-error/40 bg-df-error/10 px-4 py-3 text-sm text-red-200"
+        >
           {errorMessage}
         </div>
       )}
 
-      <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 sm:p-6">
-        <h2 className="text-base font-semibold text-zinc-50">Datos del proyecto</h2>
-        <p className="mt-1 text-sm text-zinc-400">
-          Si la URL ya existe, el sistema le agregará un número automáticamente.
+      <section className="rounded-[var(--radius-xl)] border border-df-border bg-df-card p-5 sm:p-6">
+        <h2 className="text-base font-semibold text-df-fg">Datos del proyecto</h2>
+        <p className="mt-1 text-sm text-df-muted">
+          Si la URL ya existe, el sistema le agregará un sufijo automáticamente.
         </p>
 
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-zinc-200">
-              Nombre
-            </Label>
+            <Label htmlFor="name">Nombre del proyecto</Label>
             <Input
               id="name"
               name="name"
@@ -94,22 +100,17 @@ export function NewProjectForm({
               onChange={(e) => {
                 const next = e.target.value
                 setName(next)
-                if (!slugTouched) {
-                  setSlug(slugify(next))
-                }
+                if (!slugTouched) setSlug(slugify(next))
               }}
               placeholder="Ej. Aniversario Daniela"
               required
-              className="h-11 border-zinc-700 bg-zinc-950 text-zinc-50 placeholder:text-zinc-500"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="slug" className="text-zinc-200">
-              URL pública (slug)
-            </Label>
+            <Label htmlFor="slug">URL pública (slug)</Label>
             <div className="flex items-center gap-2">
-              <span className="shrink-0 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-500">
+              <span className="shrink-0 rounded-[var(--radius-md)] border border-df-border bg-df-surface px-3 py-2.5 text-sm text-df-muted-fg">
                 /p/
               </span>
               <Input
@@ -125,88 +126,91 @@ export function NewProjectForm({
                 required
                 pattern="[a-z0-9-]+"
                 title="Solo letras minúsculas, números y guiones"
-                className="h-11 border-zinc-700 bg-zinc-950 text-zinc-50 placeholder:text-zinc-500"
               />
             </div>
-            <p className="text-xs text-zinc-500">
-              Solo minúsculas, números y guiones. Ejemplo: `para-ti-2026`
+            <p className="flex items-start gap-1.5 text-xs text-df-muted">
+              {slug ? (
+                <>
+                  <Check className="mt-0.5 size-3.5 shrink-0 text-df-success" aria-hidden />
+                  <span className="break-all">
+                    Vista pública: <span className="text-df-fg">{publicPreview}</span>
+                  </span>
+                </>
+              ) : (
+                'Solo minúsculas, números y guiones. Ejemplo: para-ti-2026'
+              )}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-zinc-200">
-              Descripción (opcional)
-            </Label>
-            <Input
+            <Label htmlFor="description">Descripción (opcional)</Label>
+            <Textarea
               id="description"
               name="description"
-              type="text"
               placeholder="Una breve descripción interna"
-              className="h-11 border-zinc-700 bg-zinc-950 text-zinc-50 placeholder:text-zinc-500"
+              rows={2}
             />
           </div>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 sm:p-6">
-        <h2 className="text-base font-semibold text-zinc-50">Plantilla</h2>
-        <p className="mt-1 text-sm text-zinc-400">
+      <section className="rounded-[var(--radius-xl)] border border-df-border bg-df-card p-5 sm:p-6">
+        <h2 className="text-base font-semibold text-df-fg">Plantilla</h2>
+        <p className="mt-1 text-sm text-df-muted">
           Empieza con una estructura lista: intro, galaxia, flores, mensaje y final.
         </p>
 
-        <div className="mt-5 space-y-3">
+        <input type="hidden" name="templateId" value={selectedTemplate} />
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {templates.length === 0 ? (
-            <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+            <p className="col-span-full rounded-[var(--radius-lg)] border border-df-warning/30 bg-df-warning/10 p-4 text-sm text-amber-200">
               No hay plantillas disponibles. Contacta al administrador o ejecuta el seed de
               Supabase.
             </p>
           ) : (
-            templates.map((template, index) => (
-              <label
-                key={template.id}
-                className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4 transition hover:border-amber-500/40 hover:bg-zinc-950"
-              >
-                <input
-                  type="radio"
-                  name="templateId"
-                  value={template.id}
-                  required
-                  defaultChecked={index === 0}
-                  className="mt-1 accent-amber-400"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-medium text-zinc-50">{template.name}</span>
+            templates.map((template) => {
+              const selected = selectedTemplate === template.id
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => setSelectedTemplate(template.id)}
+                  className={cn(
+                    'flex cursor-pointer flex-col items-start rounded-[var(--radius-xl)] border p-4 text-left transition-colors',
+                    selected
+                      ? 'border-df-primary/50 bg-df-primary/10 ring-1 ring-df-primary/30'
+                      : 'border-df-border bg-df-surface/50 hover:border-df-border-hover hover:bg-df-card-hover'
+                  )}
+                >
+                  <span className="mb-3 flex size-10 items-center justify-center rounded-[var(--radius-lg)] bg-df-bg text-df-primary ring-1 ring-df-border">
+                    <LayoutTemplate className="size-5" />
+                  </span>
+                  <span className="font-medium text-df-fg">{template.name}</span>
                   {template.description && (
-                    <span className="mt-1 block text-sm text-zinc-400">
+                    <span className="mt-1 line-clamp-2 text-sm text-df-muted">
                       {template.description}
                     </span>
                   )}
-                  <span className="mt-2 flex flex-wrap items-center gap-2">
-                    {template.is_system && (
-                      <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-xs text-sky-300 ring-1 ring-sky-500/30">
-                        Recomendada
-                      </span>
-                    )}
-                    <span className="text-xs text-zinc-500">v{template.version}</span>
+                  <span className="mt-3 flex flex-wrap items-center gap-2">
+                    {template.is_system && <Badge variant="info">Recomendada</Badge>}
+                    <span className="text-xs text-df-muted-fg">v{template.version}</span>
                   </span>
-                </span>
-              </label>
-            ))
+                </button>
+              )
+            })
           )}
         </div>
       </section>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
-        <a href={cancelHref} className="sm:flex-1">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 w-full border-zinc-700 bg-transparent text-zinc-300 hover:bg-zinc-800 hover:text-zinc-50"
-          >
-            Cancelar
-          </Button>
-        </a>
-        <SubmitButton disabled={templates.length === 0} />
+        <Link
+          href={cancelHref}
+          className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-11 sm:flex-1')}
+        >
+          Cancelar
+        </Link>
+        <SubmitButton disabled={templates.length === 0 || !selectedTemplate} />
       </div>
     </form>
   )
