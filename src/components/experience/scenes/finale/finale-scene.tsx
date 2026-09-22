@@ -10,12 +10,11 @@ interface FinaleSceneProps {
 }
 
 export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
   const { restart } = useRendererStore()
-  
+
   const finaleConfig = config as unknown as FinaleSceneConfig
 
-  // Generate particle positions once using useState initializer
   const [particles] = useState(() => {
     return Array.from({ length: 50 }).map(() => ({
       left: Math.random() * 100,
@@ -27,10 +26,11 @@ export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
 
   useEffect(() => {
     if (isPlaying) {
-      // Use setTimeout to avoid setting state directly in effect
-      const timer = setTimeout(() => setIsVisible(true), 0)
+      setIsVisible(false)
+      const timer = setTimeout(() => setIsVisible(true), 30)
       return () => clearTimeout(timer)
     }
+    setIsVisible(true)
   }, [isPlaying])
 
   const handleRepeat = () => {
@@ -41,16 +41,17 @@ export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
   }
 
   const animationClass =
-    finaleConfig.animation === 'zoom' ? 'animate-finale-zoom' :
-    finaleConfig.animation === 'slide' ? 'animate-finale-slide' :
-    'animate-finale-fade'
+    finaleConfig.animation === 'zoom'
+      ? 'animate-finale-zoom'
+      : finaleConfig.animation === 'slide'
+        ? 'animate-finale-slide'
+        : 'animate-finale-fade'
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center bg-zinc-950"
+      className="w-full h-full flex items-center justify-center bg-zinc-950 relative"
       style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 1000ms' }}
     >
-      {/* Background */}
       {finaleConfig.background === 'stars' && (
         <div className="absolute inset-0 overflow-hidden">
           {particles.map((particle, i) => (
@@ -68,7 +69,7 @@ export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
         </div>
       )}
       {finaleConfig.background === 'gradient' && (
-        <div 
+        <div
           className="absolute inset-0"
           style={{
             background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
@@ -76,71 +77,27 @@ export function FinaleScene({ config, isPlaying }: FinaleSceneProps) {
         />
       )}
 
-      {/* Content */}
       <div className={`text-center max-w-2xl px-8 relative z-10 ${animationClass}`}>
         <p className="text-3xl text-white mb-6 leading-relaxed">
-          {finaleConfig.message}
+          {finaleConfig.message || 'Gracias por acompañarme'}
         </p>
-        
+
         {finaleConfig.signature && (
-          <p className="text-xl text-zinc-300 mb-2">
-            {finaleConfig.signature}
-          </p>
+          <p className="text-xl text-zinc-300 mb-2">{finaleConfig.signature}</p>
         )}
-        
+
         {finaleConfig.date && (
-          <p className="text-sm text-zinc-500 mb-12">
-            {finaleConfig.date}
-          </p>
+          <p className="text-sm text-zinc-500 mb-12">{finaleConfig.date}</p>
         )}
-        
+
         <button
+          type="button"
           onClick={handleRepeat}
           className="mt-8 px-6 py-3 bg-white text-zinc-900 rounded-full font-medium transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-white/50"
         >
-          {finaleConfig.repeatButton}
+          {finaleConfig.repeatButton || 'Ver de nuevo'}
         </button>
       </div>
-
-      <style jsx>{`
-        @keyframes finale-fade {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        @keyframes finale-zoom {
-          from {
-            opacity: 0;
-            transform: scale(0.8);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        @keyframes finale-slide {
-          from {
-            opacity: 0;
-            transform: translateY(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-finale-fade {
-          animation: finale-fade 1.5s ease-out;
-        }
-        .animate-finale-zoom {
-          animation: finale-zoom 1.5s ease-out;
-        }
-        .animate-finale-slide {
-          animation: finale-slide 1.5s ease-out;
-        }
-      `}</style>
     </div>
   )
 }

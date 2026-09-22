@@ -1,5 +1,7 @@
 'use client'
 
+import { useMemo } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { Monitor, Smartphone, Tablet, Play, Pause, RotateCcw } from 'lucide-react'
 import { ExperienceRenderer } from '@/components/experience/renderer'
 import { useRendererStore } from '@/stores'
@@ -14,39 +16,49 @@ interface PreviewPanelProps {
   scenes: Scene[]
 }
 
-export function PreviewPanel({ 
-  device, 
+export function PreviewPanel({
+  device,
   onDeviceChange,
   projectName,
   projectSlug,
   scenes,
 }: PreviewPanelProps) {
-  const { isPlaying, play, pause, restart } = useRendererStore()
+  const { isPlaying, play, pause, restart } = useRendererStore(
+    useShallow((s) => ({
+      isPlaying: s.isPlaying,
+      play: s.play,
+      pause: s.pause,
+      restart: s.restart,
+    }))
+  )
 
-  // Convert scenes to experience config
-  const experienceConfig: ExperienceConfig = {
-    projectId: scenes[0]?.project_id || '',
-    name: projectName,
-    slug: projectSlug,
-    scenes: scenes
-      .filter((s) => s.enabled)
-      .sort((a, b) => a.position - b.position)
-      .map((scene) => ({
-        id: scene.id,
-        sceneKey: scene.scene_key,
-        sceneType: scene.scene_type as never,
-        name: scene.name,
-        position: scene.position,
-        duration: {
-          enter: 1000,
-          hold: scene.duration_ms,
-          exit: 1000,
-        },
-        trigger: scene.trigger_mode as 'auto' | 'click' | 'manual',
-        enabled: scene.enabled,
-        config: scene.config as Record<string, unknown>,
-      })),
-  }
+  // Estabilizar referencia: un objeto nuevo cada render provocaba bucle setConfig (#185)
+  const experienceConfig: ExperienceConfig = useMemo(
+    () => ({
+      projectId: scenes[0]?.project_id || '',
+      name: projectName,
+      slug: projectSlug,
+      scenes: scenes
+        .filter((s) => s.enabled)
+        .sort((a, b) => a.position - b.position)
+        .map((scene) => ({
+          id: scene.id,
+          sceneKey: scene.scene_key,
+          sceneType: scene.scene_type as never,
+          name: scene.name,
+          position: scene.position,
+          duration: {
+            enter: 1000,
+            hold: scene.duration_ms,
+            exit: 1000,
+          },
+          trigger: scene.trigger_mode as 'auto' | 'click' | 'manual',
+          enabled: scene.enabled,
+          config: scene.config as Record<string, unknown>,
+        })),
+    }),
+    [scenes, projectName, projectSlug]
+  )
 
   const hasScenes = scenes.length > 0 && scenes.some((s) => s.enabled)
 
@@ -54,9 +66,8 @@ export function PreviewPanel({
     <div className="h-full flex flex-col">
       <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-zinc-50">Preview</h2>
-        
+
         <div className="flex items-center gap-3">
-          {/* Playback controls */}
           {hasScenes && (
             <div className="flex items-center gap-1 bg-zinc-900 rounded-lg p-1">
               <button
@@ -67,7 +78,7 @@ export function PreviewPanel({
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
-              
+
               <button
                 type="button"
                 onClick={isPlaying ? pause : play}
@@ -83,7 +94,6 @@ export function PreviewPanel({
             </div>
           )}
 
-          {/* Device selector */}
           <div className="flex items-center gap-1 bg-zinc-900 rounded-lg p-1">
             <button
               type="button"
@@ -97,7 +107,7 @@ export function PreviewPanel({
             >
               <Monitor className="w-4 h-4" />
             </button>
-            
+
             <button
               type="button"
               onClick={() => onDeviceChange('tablet')}
@@ -110,7 +120,7 @@ export function PreviewPanel({
             >
               <Tablet className="w-4 h-4" />
             </button>
-            
+
             <button
               type="button"
               onClick={() => onDeviceChange('mobile')}
@@ -139,11 +149,11 @@ export function PreviewPanel({
               device === 'desktop'
                 ? 'w-full h-full'
                 : device === 'tablet'
-                ? 'w-[768px] h-[1024px] max-w-full max-h-full'
-                : 'w-[375px] h-[667px] max-w-full max-h-full'
+                  ? 'w-[768px] h-[1024px] max-w-full max-h-full'
+                  : 'w-[375px] h-[667px] max-w-full max-h-full'
             }`}
           >
-            <ExperienceRenderer 
+            <ExperienceRenderer
               config={experienceConfig}
               autoPlay={false}
               quality="medium"

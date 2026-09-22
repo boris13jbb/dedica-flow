@@ -196,14 +196,14 @@ export function MediaLibrary({
               </div>
 
               {/* Actions */}
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 {onAssetSelect && (
                   <Button
                     type="button"
                     size="sm"
                     variant="secondary"
                     onClick={() => onAssetSelect(asset)}
-                    className="h-7 px-2 bg-zinc-900/90 hover:bg-zinc-800"
+                    className="h-7 px-2 bg-amber-600/90 hover:bg-amber-500 text-zinc-950"
                   >
                     Usar
                   </Button>

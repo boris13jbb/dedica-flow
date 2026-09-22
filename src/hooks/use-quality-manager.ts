@@ -128,6 +128,11 @@ export function useQualityManager(
 }
 
 function getQualityPreset(level: 'low' | 'medium' | 'high'): QualitySettings {
+  const dpr =
+    typeof window !== 'undefined' && typeof window.devicePixelRatio === 'number'
+      ? window.devicePixelRatio
+      : 1
+
   switch (level) {
     case 'low':
       return {
@@ -136,7 +141,7 @@ function getQualityPreset(level: 'low' | 'medium' | 'high'): QualitySettings {
         enableBloom: false,
         enableShadows: false,
         antialias: false,
-        pixelRatio: Math.min(window.devicePixelRatio, 1),
+        pixelRatio: Math.min(dpr, 1),
       }
     case 'medium':
       return {
@@ -145,7 +150,7 @@ function getQualityPreset(level: 'low' | 'medium' | 'high'): QualitySettings {
         enableBloom: false,
         enableShadows: false,
         antialias: true,
-        pixelRatio: Math.min(window.devicePixelRatio, 1.5),
+        pixelRatio: Math.min(dpr, 1.5),
       }
     case 'high':
       return {
@@ -154,7 +159,7 @@ function getQualityPreset(level: 'low' | 'medium' | 'high'): QualitySettings {
         enableBloom: true,
         enableShadows: true,
         antialias: true,
-        pixelRatio: Math.min(window.devicePixelRatio, 2),
+        pixelRatio: Math.min(dpr, 2),
       }
   }
 }

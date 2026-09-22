@@ -278,12 +278,14 @@ export const nebulaSceneDefinition: SceneDefinition<NebulaSceneConfig> = {
 
 // Flowers Scene
 export const flowersSceneSchema = z.object({
-  mode: z.enum(['bouquet', 'rain', 'spiral', 'orbit', 'tunnel']).default('bouquet'),
-  amount: z.number().min(5).max(100).default(20),
+  mode: z
+    .enum(['sunflower', 'bouquet', 'rain', 'spiral', 'orbit', 'tunnel'])
+    .default('sunflower'),
+  amount: z.number().min(5).max(150).default(100),
   scale: z.number().min(0.1).max(3).default(1),
-  spread: z.number().min(1).max(20).default(5),
-  speed: z.number().min(0).max(2).default(0.5),
-  rotation: z.number().min(0).max(5).default(1),
+  spread: z.number().min(1).max(20).default(5.5),
+  speed: z.number().min(0).max(2).default(0.35),
+  rotation: z.number().min(0).max(5).default(0.7),
   flowerImage: z.string().nullable().default(null),
   backgroundColor: z.string().default('#000000'),
 })
@@ -293,7 +295,7 @@ export type FlowersSceneConfig = z.infer<typeof flowersSceneSchema>
 export const flowersSceneDefinition: SceneDefinition<FlowersSceneConfig> = {
   type: 'flowers',
   name: 'Flores',
-  description: 'Flores flotantes en diferentes modos',
+  description: 'Geometría sagrada dorada y flores 3D',
   icon: 'Flower',
   category: '3d',
   schema: flowersSceneSchema,
@@ -304,9 +306,10 @@ export const flowersSceneDefinition: SceneDefinition<FlowersSceneConfig> = {
       label: 'Modo',
       type: 'select',
       options: [
+        { label: 'Girasol dorado (paso a paso)', value: 'sunflower' },
+        { label: 'Espiral dorada', value: 'spiral' },
         { label: 'Ramo', value: 'bouquet' },
         { label: 'Lluvia', value: 'rain' },
-        { label: 'Espiral', value: 'spiral' },
         { label: 'Órbita', value: 'orbit' },
         { label: 'Túnel', value: 'tunnel' },
       ],
@@ -322,7 +325,7 @@ export const flowersSceneDefinition: SceneDefinition<FlowersSceneConfig> = {
       label: 'Cantidad',
       type: 'range',
       min: 5,
-      max: 100,
+      max: 150,
       step: 5,
     },
     {

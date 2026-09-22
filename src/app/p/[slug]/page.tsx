@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ExperienceRenderer } from '@/components/experience/renderer'
+import { normalizeSlugFromRoute } from '@/lib/slug'
 import type { Json } from '@/types'
 import type { ExperienceConfig } from '@/types'
 import { notFound } from 'next/navigation'
@@ -39,16 +40,37 @@ interface PublicationSnapshot {
   }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
+async function getActivePublication(slug: string) {
   const supabase = createAdminClient()
+  const normalizedSlug = normalizeSlugFromRoute(slug)
 
   const { data: publication } = (await supabase
     .from('publications')
-    .select('snapshot')
-    .eq('slug', slug)
+    .select('id, snapshot')
+    .eq('slug', normalizedSlug)
     .eq('status', 'active')
-    .single()) as { data: { snapshot: Json } | null }
+    .maybeSingle()) as { data: { id: string; snapshot: Json } | null }
+
+  if (publication) {
+    return publication
+  }
+
+  const { data: legacyMatches } = (await supabase
+    .from('publications')
+    .select('id, snapshot, slug')
+    .eq('status', 'active')
+    .like('slug', `${normalizedSlug}%`)) as {
+    data: Array<{ id: string; snapshot: Json; slug: string }> | null
+  }
+
+  return (
+    legacyMatches?.find((item) => item.slug.trim() === normalizedSlug) ?? null
+  )
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const publication = await getActivePublication(slug)
 
   if (!publication) {
     return {
@@ -73,15 +95,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function PublicExperiencePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const supabase = createAdminClient()
-
-  // Get active publication
-  const { data: publication } = (await supabase
-    .from('publications')
-    .select('id, snapshot')
-    .eq('slug', slug)
-    .eq('status', 'active')
-    .single()) as { data: { id: string; snapshot: Json } | null }
+  const publication = await getActivePublication(slug)
 
   if (!publication) {
     notFound()

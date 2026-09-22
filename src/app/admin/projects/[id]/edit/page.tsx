@@ -1,5 +1,5 @@
 import { requireAuth, getOrCreateUserWorkspace } from '@/lib/auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { EditorClient } from './editor-client'
 import type { Project, Scene } from '@/types'
@@ -19,26 +19,24 @@ export default async function EditorPage({ params }: EditorPageProps) {
     return <div>Error al cargar workspace</div>
   }
 
-  const supabase = await createServerClient()
+  const admin = createAdminClient()
 
-  // Load project
-  const { data: project } = await supabase
+  const { data: project } = (await admin
     .from('projects')
     .select('id, name, slug, status, draft_config, workspace_id')
     .eq('id', id)
     .eq('workspace_id', workspace.workspace_id)
-    .single() as { data: Project | null }
+    .single()) as { data: Project | null }
 
   if (!project) {
     notFound()
   }
 
-  // Load scenes
-  const { data: scenes } = await supabase
+  const { data: scenes } = (await admin
     .from('scenes')
     .select('*')
     .eq('project_id', id)
-    .order('position', { ascending: true }) as { data: Scene[] | null }
+    .order('position', { ascending: true })) as { data: Scene[] | null }
 
   return <EditorClient project={project} initialScenes={scenes || []} />
 }

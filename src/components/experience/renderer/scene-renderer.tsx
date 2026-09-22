@@ -29,7 +29,7 @@ export function SceneRenderer({ scene, isPlaying, quality }: SceneRendererProps)
       return <NebulaScene config={config} quality={quality} />
     
     case 'flowers':
-      return <FlowersScene config={config} quality={quality} />
+      return <FlowersScene config={config} quality={quality} isPlaying={isPlaying} />
     
     case 'photoOrbit':
       return <PhotoOrbitScene config={config} quality={quality} />

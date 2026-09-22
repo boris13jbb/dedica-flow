@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { EditorFieldDefinition } from '@/components/experience/registry'
@@ -10,7 +11,18 @@ interface TextFieldProps {
   onChange: (value: string) => void
 }
 
+/**
+ * Estado local para que el cursor no se pierda si el padre
+ * re-renderiza el preview o sincroniza el store.
+ */
 export function TextField({ field, value, onChange }: TextFieldProps) {
+  const external = typeof value === 'string' ? value : value == null ? '' : String(value)
+  const [local, setLocal] = useState(external)
+
+  useEffect(() => {
+    setLocal(external)
+  }, [external])
+
   return (
     <div className="space-y-2">
       <Label htmlFor={field.key} className="text-zinc-200">
@@ -19,9 +31,14 @@ export function TextField({ field, value, onChange }: TextFieldProps) {
       <Input
         id={field.key}
         type="text"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
+        value={local}
+        onChange={(e) => {
+          const next = e.target.value
+          setLocal(next)
+          onChange(next)
+        }}
         placeholder={field.placeholder}
+        autoComplete="off"
         className="bg-zinc-800 border-zinc-700 text-zinc-50 placeholder:text-zinc-500"
       />
       {field.description && (
@@ -38,6 +55,13 @@ interface TextAreaFieldProps {
 }
 
 export function TextAreaField({ field, value, onChange }: TextAreaFieldProps) {
+  const external = typeof value === 'string' ? value : value == null ? '' : String(value)
+  const [local, setLocal] = useState(external)
+
+  useEffect(() => {
+    setLocal(external)
+  }, [external])
+
   return (
     <div className="space-y-2">
       <Label htmlFor={field.key} className="text-zinc-200">
@@ -45,10 +69,15 @@ export function TextAreaField({ field, value, onChange }: TextAreaFieldProps) {
       </Label>
       <textarea
         id={field.key}
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
+        value={local}
+        onChange={(e) => {
+          const next = e.target.value
+          setLocal(next)
+          onChange(next)
+        }}
         placeholder={field.placeholder}
         rows={4}
+        autoComplete="off"
         className="flex w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       />
       {field.description && (
@@ -73,7 +102,7 @@ export function NumberField({ field, value, onChange }: NumberFieldProps) {
       <Input
         id={field.key}
         type="number"
-        value={value || 0}
+        value={Number.isFinite(value) ? value : 0}
         onChange={(e) => onChange(Number(e.target.value))}
         min={field.min}
         max={field.max}
@@ -105,7 +134,7 @@ export function RangeField({ field, value, onChange }: RangeFieldProps) {
       <input
         id={field.key}
         type="range"
-        value={value || 0}
+        value={Number.isFinite(value) ? value : 0}
         onChange={(e) => onChange(Number(e.target.value))}
         min={field.min}
         max={field.max}
@@ -126,6 +155,8 @@ interface ColorFieldProps {
 }
 
 export function ColorField({ field, value, onChange }: ColorFieldProps) {
+  const color = value || '#000000'
+
   return (
     <div className="space-y-2">
       <Label htmlFor={field.key} className="text-zinc-200">
@@ -135,13 +166,13 @@ export function ColorField({ field, value, onChange }: ColorFieldProps) {
         <input
           id={field.key}
           type="color"
-          value={value || '#000000'}
+          value={color}
           onChange={(e) => onChange(e.target.value)}
           className="h-10 w-20 rounded border border-zinc-700 bg-zinc-800 cursor-pointer"
         />
         <Input
           type="text"
-          value={value || '#000000'}
+          value={color}
           onChange={(e) => onChange(e.target.value)}
           className="bg-zinc-800 border-zinc-700 text-zinc-50 font-mono text-sm"
         />

@@ -1,8 +1,10 @@
+import { getAppUrl } from '@/lib/app-url'
+
 // App configuration
 export const appConfig = {
   name: 'DedicaStudio',
   description: 'Plataforma para crear experiencias web audiovisuales e interactivas',
-  url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  url: getAppUrl(),
   version: '0.1.0',
 } as const
 
