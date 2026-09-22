@@ -78,6 +78,10 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
     setPreviewDevice,
   } = useEditorStore()
 
+  // Mientras el store no corresponde a este proyecto, mostrar escenas del servidor.
+  const storeProjectId = useEditorStore((s) => s.project?.id)
+  const visibleScenes = storeProjectId === project.id ? scenes : initialScenes
+
   const { goToScene } = useRendererStore(
     useShallow((s) => ({ goToScene: s.goToScene }))
   )
@@ -106,7 +110,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
     }
   }, [selectedSceneId, goToScene])
 
-  const selectedScene = scenes.find((s) => s.id === selectedSceneId)
+  const selectedScene = visibleScenes.find((s) => s.id === selectedSceneId)
 
   const handleSave = useCallback(async () => {
     const state = useEditorStore.getState()
@@ -348,7 +352,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">
             <SceneList
-              scenes={scenes}
+              scenes={visibleScenes}
               selectedSceneId={selectedSceneId}
               onSelectScene={handleSelectScene}
               onReorderScenes={handleReorderScenes}
@@ -366,7 +370,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
             onDeviceChange={setPreviewDevice}
             projectName={project.name}
             projectSlug={project.slug}
-            scenes={scenes}
+            scenes={visibleScenes}
           />
         </div>
 
@@ -396,7 +400,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">
                 <SceneList
-                  scenes={scenes}
+                  scenes={visibleScenes}
                   selectedSceneId={selectedSceneId}
                   onSelectScene={handleSelectScene}
                   onReorderScenes={handleReorderScenes}
@@ -415,7 +419,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
                 onDeviceChange={setPreviewDevice}
                 projectName={project.name}
                 projectSlug={project.slug}
-                scenes={scenes}
+                scenes={visibleScenes}
               />
             </div>
           )}

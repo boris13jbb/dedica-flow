@@ -249,12 +249,16 @@ export function PublishPanel({
                 </Badge>
               </div>
 
-              {isPublished && activePublication ? (
+              {isPublished ? (
                 <div className="space-y-2">
-                  <p className="text-sm text-df-muted">
-                    Versión {activePublication.version} ·{' '}
-                    {formatPublicationDate(activePublication.published_at)}
-                  </p>
+                  {activePublication ? (
+                    <p className="text-sm text-df-muted">
+                      Versión {activePublication.version} ·{' '}
+                      {formatPublicationDate(activePublication.published_at)}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-df-muted">Enlace público disponible.</p>
+                  )}
                   <div className="flex flex-wrap items-center gap-2">
                     <code className="max-w-full truncate rounded-[var(--radius-md)] border border-df-border bg-df-surface px-2.5 py-1.5 text-xs text-df-fg">
                       {publicUrl}

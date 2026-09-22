@@ -48,6 +48,15 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'archived', label: 'Archivados' },
 ]
 
+/** Evita mismatch de hidratación: Date.now() difiere entre SSR y cliente. */
+function RelativeUpdatedAt({ value }: { value: string }) {
+  return (
+    <span suppressHydrationWarning>
+      Actualizado {formatRelativeDate(value)}
+    </span>
+  )
+}
+
 interface ProjectDashboardProps {
   projects: DashboardProject[]
   draftCount: number
@@ -373,7 +382,7 @@ export function ProjectDashboard({
                     <p className="mt-1 truncate text-sm text-df-muted">
                       /p/{project.slug}
                       <span className="mx-2 text-df-muted-fg">·</span>
-                      Actualizado {formatRelativeDate(project.updated_at)}
+                      <RelativeUpdatedAt value={project.updated_at} />
                     </p>
                   </div>
 
