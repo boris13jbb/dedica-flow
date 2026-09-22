@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/dialog'
 import { toast } from '@/components/ui/toast'
 import { formatPublicationDate } from '@/lib/format'
 import {
@@ -43,7 +44,7 @@ interface PublishPanelProps {
   enabledScenes: number
 }
 
-type PendingAction = 'publish' | 'unpublish' | null
+type PendingAction = 'publish' | null
 
 export function PublishPanel({
   projectId,
@@ -57,6 +58,11 @@ export function PublishPanel({
   const [loading, setLoading] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction>(null)
+  const [unpublishOpen, setUnpublishOpen] = useState(false)
+  const [restoreTarget, setRestoreTarget] = useState<{
+    id: string
+    version: number
+  } | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [lastPublicUrl, setLastPublicUrl] = useState<string | null>(null)
@@ -117,42 +123,37 @@ export function PublishPanel({
     try {
       await unpublishProject(projectId)
       setSuccessMessage('Proyecto despublicado correctamente')
-      setPendingAction(null)
+      toast.success('Experiencia despublicada')
       router.refresh()
       await loadPublications()
     } catch (error) {
-      console.error('Error unpublishing:', error)
       setErrorMessage(
         error instanceof Error ? error.message : 'No se pudo despublicar el proyecto'
       )
+      throw error
     } finally {
       setLoading(false)
     }
   }
 
-  const handleRestore = async (publicationId: string, version: number) => {
-    if (
-      !window.confirm(
-        `¿Restaurar la versión ${version}? Esta se convertirá en la versión activa.`
-      )
-    ) {
-      return
-    }
+  const handleRestore = async () => {
+    if (!restoreTarget) return
 
     setErrorMessage(null)
     setSuccessMessage(null)
     setLoading(true)
 
     try {
-      await restorePublication(publicationId)
-      setSuccessMessage(`Versión ${version} restaurada`)
+      await restorePublication(restoreTarget.id)
+      setSuccessMessage(`Versión ${restoreTarget.version} restaurada`)
+      toast.success(`Versión ${restoreTarget.version} restaurada`)
       router.refresh()
       await loadPublications()
     } catch (error) {
-      console.error('Error restoring:', error)
       setErrorMessage(
         error instanceof Error ? error.message : 'No se pudo restaurar la versión'
       )
+      throw error
     } finally {
       setLoading(false)
     }
@@ -312,29 +313,6 @@ export function PublishPanel({
                   Cancelar
                 </Button>
               </div>
-            ) : pendingAction === 'unpublish' ? (
-              <div className="flex flex-wrap gap-2 rounded-[var(--radius-xl)] border border-df-border bg-df-surface p-3">
-                <p className="w-full text-sm text-df-muted">
-                  ¿Despublicar? El enlace dejará de mostrar la experiencia.
-                </p>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleUnpublish}
-                  disabled={loading}
-                  loading={loading}
-                >
-                  Confirmar
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setPendingAction(null)}
-                  disabled={loading}
-                >
-                  Cancelar
-                </Button>
-              </div>
             ) : (
               <>
                 <Button
@@ -367,7 +345,7 @@ export function PublishPanel({
                     onClick={() => {
                       setErrorMessage(null)
                       setSuccessMessage(null)
-                      setPendingAction('unpublish')
+                      setUnpublishOpen(true)
                     }}
                     disabled={loading}
                     className="min-h-11 sm:min-h-10"
@@ -430,7 +408,9 @@ export function PublishPanel({
                         type="button"
                         size="sm"
                         variant="secondary"
-                        onClick={() => handleRestore(pub.id, pub.version)}
+                        onClick={() =>
+                          setRestoreTarget({ id: pub.id, version: pub.version })
+                        }
                         disabled={loading}
                       >
                         Restaurar
@@ -443,6 +423,34 @@ export function PublishPanel({
           )}
         </section>
       )}
+
+      <ConfirmDialog
+        open={unpublishOpen}
+        onOpenChange={setUnpublishOpen}
+        title="Despublicar experiencia"
+        description="El enlace público dejará de mostrar la experiencia. Podrás volver a publicar más tarde."
+        confirmLabel="Despublicar"
+        variant="destructive"
+        loading={loading}
+        onConfirm={handleUnpublish}
+      />
+
+      <ConfirmDialog
+        open={Boolean(restoreTarget)}
+        onOpenChange={(open) => {
+          if (!open) setRestoreTarget(null)
+        }}
+        title={
+          restoreTarget
+            ? `Restaurar versión ${restoreTarget.version}`
+            : 'Restaurar versión'
+        }
+        description="Esta versión se convertirá en la activa. La publicación actual se reemplazará."
+        confirmLabel="Restaurar"
+        variant="primary"
+        loading={loading}
+        onConfirm={handleRestore}
+      />
     </div>
   )
 }

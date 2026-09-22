@@ -1,10 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import { Upload, Trash2, Image as ImageIcon, Music, Film } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
+import { ConfirmDialog } from '@/components/ui/dialog'
+import { toast } from '@/components/ui/toast'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { mediaConfig } from '@/config'
+import { formatFileSize } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 interface Asset {
   id: string
@@ -22,6 +29,8 @@ interface MediaLibraryProps {
   onAssetSelect?: (asset: Asset) => void
   onRefresh?: () => void
   filterType?: 'image' | 'audio' | 'video' | 'all'
+  /** Si true, muestra tabs Todos/Imágenes/Videos/Audios (solo cuando filterType=all) */
+  showTabs?: boolean
 }
 
 export function MediaLibrary({
@@ -30,12 +39,25 @@ export function MediaLibrary({
   onAssetSelect,
   onRefresh,
   filterType = 'all',
+  showTabs = false,
 }: MediaLibraryProps) {
   const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<string>('')
+  const [uploadProgress, setUploadProgress] = useState('')
+  const [tab, setTab] = useState<'all' | 'image' | 'audio' | 'video'>(
+    filterType === 'all' ? 'all' : filterType
+  )
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
-  const filteredAssets =
-    filterType === 'all' ? assets : assets.filter((a) => a.type === filterType)
+  const activeFilter = filterType !== 'all' ? filterType : tab
+
+  const filteredAssets = useMemo(
+    () =>
+      activeFilter === 'all'
+        ? assets
+        : assets.filter((a) => a.type === activeFilter),
+    [assets, activeFilter]
+  )
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -59,79 +81,109 @@ export function MediaLibrary({
 
         if (!response.ok) {
           const error = await response.json()
-          throw new Error(error.message || 'Error al subir archivo')
+          throw new Error(
+            (error as { message?: string }).message || 'Error al subir archivo'
+          )
         }
       }
 
       setUploadProgress('¡Completado!')
+      toast.success('Archivos subidos')
       setTimeout(() => {
         setUploadProgress('')
         onRefresh?.()
-      }, 1000)
+      }, 800)
     } catch (error) {
-      console.error('Error uploading:', error)
-      alert(error instanceof Error ? error.message : 'Error al subir archivo')
+      toast.error(
+        error instanceof Error ? error.message : 'Error al subir archivo'
+      )
     } finally {
       setUploading(false)
       e.target.value = ''
     }
   }
 
-  const handleDelete = async (assetId: string) => {
-    if (!confirm('¿Estás seguro de eliminar este archivo?')) return
-
+  const handleDelete = async () => {
+    if (!deleteId) return
+    setDeleting(true)
     try {
-      const response = await fetch(`/api/media/${assetId}`, {
+      const response = await fetch(`/api/media/${deleteId}`, {
         method: 'DELETE',
       })
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.message || 'Error al eliminar archivo')
+        throw new Error(
+          (error as { message?: string }).message || 'Error al eliminar archivo'
+        )
       }
 
+      toast.success('Archivo eliminado')
       onRefresh?.()
     } catch (error) {
-      console.error('Error deleting:', error)
-      alert(error instanceof Error ? error.message : 'Error al eliminar archivo')
+      toast.error(
+        error instanceof Error ? error.message : 'Error al eliminar archivo'
+      )
+    } finally {
+      setDeleting(false)
+      setDeleteId(null)
     }
-  }
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
   const getIcon = (type: string) => {
     switch (type) {
       case 'image':
-        return <ImageIcon className="w-4 h-4" />
+        return <ImageIcon className="size-5" />
       case 'audio':
-        return <Music className="w-4 h-4" />
+        return <Music className="size-5" />
       case 'video':
-        return <Film className="w-4 h-4" />
+        return <Film className="size-5" />
       default:
         return null
     }
   }
 
   const acceptTypes =
-    filterType === 'image'
-      ? 'image/jpeg,image/jpg,image/png,image/gif,image/webp'
-      : filterType === 'audio'
-      ? 'audio/mpeg,audio/mp3,audio/wav,audio/ogg'
-      : filterType === 'video'
-      ? 'video/mp4,video/webm'
-      : 'image/*,audio/*,video/*'
+    activeFilter === 'image'
+      ? mediaConfig.allowedMimeTypes.image.join(',')
+      : activeFilter === 'audio'
+        ? mediaConfig.allowedMimeTypes.audio.join(',')
+        : activeFilter === 'video'
+          ? mediaConfig.allowedMimeTypes.video.join(',')
+          : [
+              ...mediaConfig.allowedMimeTypes.image,
+              ...mediaConfig.allowedMimeTypes.audio,
+              ...mediaConfig.allowedMimeTypes.video,
+            ].join(',')
+
+  const limitHint =
+    activeFilter === 'image'
+      ? `JPG, PNG, GIF, WEBP · máx. ${formatFileSize(mediaConfig.maxFileSize.image)}`
+      : activeFilter === 'audio'
+        ? `MP3, WAV, OGG · máx. ${formatFileSize(mediaConfig.maxFileSize.audio)}`
+        : activeFilter === 'video'
+          ? `MP4, WEBM · máx. ${formatFileSize(mediaConfig.maxFileSize.video)}`
+          : 'Imágenes, audio o video según límites del proyecto'
+
+  const uploadId = `file-upload-${projectId}-${activeFilter}`
 
   return (
     <div className="space-y-4">
-      {/* Upload area */}
-      <div className="border-2 border-dashed border-zinc-700 rounded-lg p-8 text-center hover:border-zinc-600 transition-colors">
+      {showTabs && filterType === 'all' && (
+        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+          <TabsList className="w-full justify-start overflow-x-auto sm:w-auto">
+            <TabsTrigger value="all">Todos</TabsTrigger>
+            <TabsTrigger value="image">Imágenes</TabsTrigger>
+            <TabsTrigger value="video">Videos</TabsTrigger>
+            <TabsTrigger value="audio">Audios</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
+
+      <div className="rounded-[var(--radius-xl)] border-2 border-dashed border-df-border p-6 text-center transition-colors hover:border-df-border-hover sm:p-8">
         <input
           type="file"
-          id="file-upload"
+          id={uploadId}
           className="hidden"
           multiple
           accept={acceptTypes}
@@ -139,89 +191,101 @@ export function MediaLibrary({
           disabled={uploading}
         />
         <label
-          htmlFor="file-upload"
-          className="cursor-pointer flex flex-col items-center gap-2"
+          htmlFor={uploadId}
+          className={cn(
+            'flex cursor-pointer flex-col items-center gap-2',
+            uploading && 'pointer-events-none opacity-60'
+          )}
         >
-          <Upload className="w-8 h-8 text-zinc-400" />
+          <Upload className="size-8 text-df-muted" />
           <div>
-            <p className="text-sm font-medium text-zinc-300">
-              {uploading ? uploadProgress : 'Haz clic para subir archivos'}
+            <p className="text-sm font-medium text-df-fg">
+              {uploading
+                ? uploadProgress
+                : 'Arrastra archivos o haz clic para seleccionar'}
             </p>
-            <p className="text-xs text-zinc-500 mt-1">
-              {filterType === 'all' && 'Imágenes, audio o video'}
-              {filterType === 'image' && 'JPG, PNG, GIF, WEBP hasta 50MB'}
-              {filterType === 'audio' && 'MP3, WAV, OGG hasta 50MB'}
-              {filterType === 'video' && 'MP4, WEBM hasta 50MB'}
-            </p>
+            <p className="mt-1 text-xs text-df-muted-fg">{limitHint}</p>
           </div>
         </label>
       </div>
 
-      {/* Assets grid */}
       {filteredAssets.length === 0 ? (
-        <div className="text-center py-12 text-zinc-500">
-          <p>No hay archivos</p>
-          <p className="text-sm mt-1">Sube tu primer archivo para comenzar</p>
-        </div>
+        <EmptyState
+          icon={<ImageIcon className="size-5" />}
+          title="No hay archivos"
+          description="Sube tu primer archivo para comenzar."
+          className="py-10"
+        />
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {filteredAssets.map((asset) => (
             <Card
               key={asset.id}
-              className="group relative overflow-hidden bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors"
+              className="group relative overflow-hidden transition-colors hover:border-df-border-hover"
             >
-              {/* Preview */}
-              <div className="aspect-video bg-zinc-950 flex items-center justify-center relative">
+              <div className="relative flex aspect-video items-center justify-center bg-df-bg">
                 {asset.type === 'image' ? (
                   <Image
                     src={asset.url}
                     alt={asset.original_name}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
                   />
                 ) : (
-                  <div className="text-zinc-600">{getIcon(asset.type)}</div>
+                  <div className="text-df-muted-fg">{getIcon(asset.type)}</div>
                 )}
               </div>
 
-              {/* Info */}
               <div className="p-3">
-                <p className="text-xs font-medium text-zinc-300 truncate">
+                <p className="truncate text-xs font-medium text-df-fg">
                   {asset.original_name}
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="mt-1 text-xs text-df-muted-fg">
                   {formatFileSize(asset.size_bytes)}
                 </p>
               </div>
 
-              {/* Actions */}
-              <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+              <div className="absolute right-2 top-2 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                 {onAssetSelect && (
                   <Button
                     type="button"
                     size="sm"
-                    variant="secondary"
+                    variant="primary"
                     onClick={() => onAssetSelect(asset)}
-                    className="h-7 px-2 bg-amber-600/90 hover:bg-amber-500 text-zinc-950"
+                    className="h-7 px-2 text-xs"
                   >
                     Usar
                   </Button>
                 )}
                 <Button
                   type="button"
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleDelete(asset.id)}
-                  className="h-7 w-7 p-0 bg-zinc-900/90 hover:bg-red-900"
+                  size="icon-sm"
+                  variant="destructive"
+                  onClick={() => setDeleteId(asset.id)}
+                  aria-label="Eliminar archivo"
+                  className="h-7 w-7"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="size-3" />
                 </Button>
               </div>
             </Card>
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteId)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null)
+        }}
+        title="Eliminar archivo"
+        description="Esta acción no se puede deshacer. El archivo se eliminará del almacenamiento."
+        confirmLabel="Eliminar"
+        variant="destructive"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

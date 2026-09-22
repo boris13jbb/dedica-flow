@@ -41,3 +41,17 @@ export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs'
 
 export { Switch } from './switch'
 export type { SwitchProps } from './switch'
+
+export { IconButton, Spinner } from './icon-button'
+export type { IconButtonProps } from './icon-button'
+
+export { PageHeader } from './page-header'
+export type { PageHeaderProps } from './page-header'
+
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from './dropdown-menu'

@@ -5,13 +5,18 @@ import {
   Music,
   CheckCircle2,
   Volume2,
-  Loader2,
   Upload,
   AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/icon-button'
 import { MediaLibrary } from '@/components/media'
 import { updateProjectAudioConfig } from '@/app/admin/projects/[id]/media/actions'
+import { mediaConfig } from '@/config'
+import { formatFileSize } from '@/lib/format'
 import type { AudioConfig } from '@/types'
 
 interface Asset {
@@ -31,8 +36,11 @@ interface ProjectAudioPanelProps {
   onRefresh?: () => void
 }
 
+const AUDIO_MAX_LABEL = formatFileSize(mediaConfig.maxFileSize.audio)
+
 /**
  * Apartado dedicado: subir y asignar la música de fondo de la experiencia.
+ * Lógica de negocio intacta; solo presentación DedicaFlow.
  */
 export function ProjectAudioPanel({
   projectId,
@@ -83,7 +91,6 @@ export function ProjectAudioPanel({
         setMessage('Audio guardado. Publica el proyecto para que suene en vivo.')
         onRefresh?.()
       } catch (err) {
-        console.error(err)
         setError(
           err instanceof Error ? err.message : 'No se pudo guardar el audio'
         )
@@ -94,6 +101,10 @@ export function ProjectAudioPanel({
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('audio/')) {
       setError('Solo se permiten archivos de audio (MP3, WAV, OGG).')
+      return
+    }
+    if (file.size > mediaConfig.maxFileSize.audio) {
+      setError(`El audio supera el máximo de ${AUDIO_MAX_LABEL}.`)
       return
     }
 
@@ -113,7 +124,9 @@ export function ProjectAudioPanel({
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
-        throw new Error(data.message || 'Error al subir el audio')
+        throw new Error(
+          (data as { message?: string }).message || 'Error al subir el audio'
+        )
       }
 
       const uploaded = await response.json()
@@ -131,7 +144,6 @@ export function ProjectAudioPanel({
       }
       onRefresh?.()
     } catch (err) {
-      console.error(err)
       setError(err instanceof Error ? err.message : 'Error al subir el audio')
     } finally {
       setUploading(false)
@@ -143,48 +155,46 @@ export function ProjectAudioPanel({
     <section
       id="audio-experiencia"
       aria-labelledby="audio-experiencia-title"
-      className="overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-b from-amber-400/[0.07] to-zinc-950"
+      className="overflow-hidden rounded-[var(--radius-xl)] border border-df-primary/35 bg-gradient-to-b from-df-primary/[0.08] to-df-card"
     >
-      <div className="border-b border-amber-500/20 px-5 py-4 sm:px-6">
+      <div className="border-b border-df-primary/20 px-5 py-5 sm:px-6">
         <div className="flex flex-wrap items-start gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-zinc-950">
-            <Music className="h-5 w-5" />
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-df-primary text-df-primary-fg shadow-[var(--shadow-glow)]">
+            <Music className="size-6" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-amber-300/90">
-              Apartado de audio
+            <p className="text-xs font-medium uppercase tracking-wider text-df-primary-light">
+              Audio de la experiencia
             </p>
             <h2
               id="audio-experiencia-title"
-              className="text-xl font-semibold text-zinc-50"
+              className="text-xl font-semibold text-df-fg sm:text-2xl"
             >
-              Insertar música de la experiencia
+              Sube la música de fondo
             </h2>
-            <p className="mt-1 text-sm text-zinc-400">
-              Sube un MP3, WAV u OGG. Este archivo sonará de fondo cuando alguien
-              abra el enlace público.
+            <p className="mt-1.5 text-sm text-df-muted">
+              Este archivo sonará cuando alguien abra el enlace público. Es el
+              paso 2 del flujo: Escenas → Audio → Publicar.
             </p>
           </div>
           {selected ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-500/30">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+            <Badge variant="success" dot>
               Audio activo
-            </span>
+            </Badge>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-400 ring-1 ring-zinc-700">
+            <Badge variant="warning" dot>
               Sin audio
-            </span>
+            </Badge>
           )}
         </div>
       </div>
 
       <div className="space-y-6 p-5 sm:p-6">
-        {/* Zona de subida dedicada */}
         <div>
           <input
             ref={fileInputRef}
             type="file"
-            accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/*"
+            accept={mediaConfig.allowedMimeTypes.audio.join(',')}
             className="hidden"
             disabled={uploading || pending}
             onChange={(e) => {
@@ -196,40 +206,35 @@ export function ProjectAudioPanel({
             type="button"
             disabled={uploading || pending}
             onClick={() => fileInputRef.current?.click()}
-            className="flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-amber-400/40 bg-zinc-950/60 px-6 py-10 text-center transition hover:border-amber-400/70 hover:bg-zinc-950 disabled:opacity-60"
+            className="flex min-h-[160px] w-full flex-col items-center justify-center gap-3 rounded-[var(--radius-xl)] border-2 border-dashed border-df-primary/45 bg-df-bg/70 px-6 py-10 text-center transition-colors hover:border-df-primary hover:bg-df-bg disabled:opacity-60"
           >
             {uploading ? (
-              <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
+              <Spinner className="size-8" label="Subiendo audio" />
             ) : (
-              <Upload className="h-8 w-8 text-amber-400" />
+              <Upload className="size-8 text-df-primary" />
             )}
             <div>
-              <p className="text-base font-semibold text-zinc-50">
-                {uploading
-                  ? 'Subiendo audio…'
-                  : 'Haz clic para subir tu audio'}
+              <p className="text-base font-semibold text-df-fg">
+                {uploading ? 'Subiendo audio…' : 'Haz clic para subir tu audio'}
               </p>
-              <p className="mt-1 text-sm text-zinc-500">
-                MP3, WAV u OGG · máximo 50 MB
+              <p className="mt-1 text-sm text-df-muted">
+                MP3, WAV u OGG · máximo {AUDIO_MAX_LABEL}
               </p>
             </div>
           </button>
         </div>
 
         {selected && (
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-4">
+          <div className="rounded-[var(--radius-lg)] border border-df-border bg-df-surface p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs text-zinc-500">Archivo asignado</p>
-                <p className="font-medium text-zinc-100">
-                  {selected.original_name}
-                </p>
+                <p className="text-xs text-df-muted-fg">Archivo asignado</p>
+                <p className="font-medium text-df-fg">{selected.original_name}</p>
               </div>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                className="border-zinc-600"
                 disabled={pending}
                 onClick={() => {
                   setAssetId(undefined)
@@ -248,14 +253,14 @@ export function ProjectAudioPanel({
           </div>
         )}
 
-        <div className="grid gap-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 sm:grid-cols-2">
-          <p className="sm:col-span-2 text-sm font-medium text-zinc-300">
+        <div className="grid gap-4 rounded-[var(--radius-lg)] border border-df-border bg-df-surface/50 p-4 sm:grid-cols-2">
+          <p className="text-sm font-medium text-df-fg sm:col-span-2">
             Ajustes de reproducción
           </p>
 
-          <label className="block text-sm text-zinc-300">
-            <span className="mb-2 flex items-center gap-1.5">
-              <Volume2 className="h-4 w-4" />
+          <label className="block text-sm text-df-muted">
+            <span className="mb-2 flex items-center gap-1.5 text-df-fg">
+              <Volume2 className="size-4" />
               Volumen ({Math.round(volume * 100)}%)
             </span>
             <input
@@ -267,15 +272,15 @@ export function ProjectAudioPanel({
               onChange={(e) => setVolume(Number(e.target.value))}
               onMouseUp={() => save({ volume })}
               onTouchEnd={() => save({ volume })}
-              className="w-full accent-amber-400"
+              className="w-full accent-[var(--primary)]"
             />
           </label>
 
-          <label className="flex items-center gap-2 text-sm text-zinc-300 sm:mt-7">
+          <label className="flex items-center gap-2 text-sm text-df-fg sm:mt-7">
             <input
               type="checkbox"
               checked={loop}
-              className="accent-amber-400"
+              className="size-4 accent-[var(--primary)]"
               onChange={(e) => {
                 const next = e.target.checked
                 setLoop(next)
@@ -285,9 +290,10 @@ export function ProjectAudioPanel({
             Repetir en bucle
           </label>
 
-          <label className="block text-sm text-zinc-300">
-            Fade in (ms)
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="fade-in">Fade in (ms)</Label>
+            <Input
+              id="fade-in"
               type="number"
               min={0}
               max={10000}
@@ -295,13 +301,13 @@ export function ProjectAudioPanel({
               value={fadeIn}
               onChange={(e) => setFadeIn(Number(e.target.value))}
               onBlur={() => save({ fadeIn })}
-              className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2"
             />
-          </label>
+          </div>
 
-          <label className="block text-sm text-zinc-300">
-            Fade out (ms)
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="fade-out">Fade out (ms)</Label>
+            <Input
+              id="fade-out"
               type="number"
               min={0}
               max={10000}
@@ -309,36 +315,36 @@ export function ProjectAudioPanel({
               value={fadeOut}
               onChange={(e) => setFadeOut(Number(e.target.value))}
               onBlur={() => save({ fadeOut })}
-              className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2"
             />
-          </label>
+          </div>
         </div>
 
         {(message || error) && (
           <div
+            role={error ? 'alert' : 'status'}
             className={[
-              'flex items-start gap-2 rounded-lg px-3 py-2 text-sm',
+              'flex items-start gap-2 rounded-[var(--radius-md)] px-3 py-2.5 text-sm',
               error
-                ? 'bg-red-500/10 text-red-300'
-                : 'bg-emerald-500/10 text-emerald-300',
+                ? 'bg-df-error/10 text-red-300'
+                : 'bg-df-success/10 text-emerald-300',
             ].join(' ')}
           >
             {error ? (
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
             ) : (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
             )}
             <span>{error || message}</span>
           </div>
         )}
 
         <div>
-          <h3 className="mb-1 text-sm font-semibold text-zinc-200">
+          <h3 className="mb-1 text-sm font-semibold text-df-fg">
             O elige un audio ya subido
           </h3>
-          <p className="mb-3 text-xs text-zinc-500">
-            Pulsa <strong className="text-zinc-300">Usar</strong> en la tarjeta
-            del archivo.
+          <p className="mb-3 text-xs text-df-muted">
+            Pulsa <strong className="text-df-fg">Usar</strong> en la tarjeta del
+            archivo.
           </p>
           <MediaLibrary
             projectId={projectId}

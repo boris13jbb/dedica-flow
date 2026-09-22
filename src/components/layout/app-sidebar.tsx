@@ -6,6 +6,8 @@ import {
   Home,
   Layers,
   LayoutTemplate,
+  ImageIcon,
+  Settings,
   PanelLeftClose,
   PanelLeft,
   X,
@@ -15,28 +17,47 @@ import { Logo } from '@/components/brand/logo'
 import { LogoutButton } from '@/components/admin/logout-button'
 import { getInitials } from '@/lib/format'
 import { Button } from '@/components/ui/button'
+import { Tooltip } from '@/components/ui/tooltip'
 
-const NAV_ITEMS = [
+type NavItem = {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  href?: string
+  match?: (pathname: string) => boolean
+  /** Sin ruta real: se muestra deshabilitado (no 404) */
+  disabled?: boolean
+}
+
+const NAV_ITEMS: NavItem[] = [
   {
     href: '/admin',
     label: 'Inicio',
     icon: Home,
-    match: (pathname: string) => pathname === '/admin',
+    match: (pathname) => pathname === '/admin',
   },
   {
     href: '/admin',
     label: 'Tus experiencias',
     icon: Layers,
-    // Activo en rutas de proyecto; en /admin solo destaca Inicio
-    match: (pathname: string) => pathname.startsWith('/admin/projects'),
+    match: (pathname) => pathname.startsWith('/admin/projects'),
+  },
+  {
+    label: 'Medios',
+    icon: ImageIcon,
+    disabled: true,
   },
   {
     href: '/admin/projects/new',
     label: 'Plantillas',
     icon: LayoutTemplate,
-    match: (pathname: string) => pathname === '/admin/projects/new',
+    match: (pathname) => pathname === '/admin/projects/new',
   },
-] as const
+  {
+    label: 'Configuración',
+    icon: Settings,
+    disabled: true,
+  },
+]
 
 interface AppSidebarProps {
   email?: string | null
@@ -46,43 +67,80 @@ interface AppSidebarProps {
   onMobileOpenChange?: (open: boolean) => void
 }
 
-function NavLink({
-  href,
-  label,
-  icon: Icon,
+function NavItemRow({
+  item,
   active,
   collapsed,
   onNavigate,
 }: {
-  href: string
-  label: string
-  icon: React.ComponentType<{ className?: string }>
+  item: NavItem
   active: boolean
   collapsed?: boolean
   onNavigate?: () => void
 }) {
-  return (
-    <Link
-      href={href}
-      onClick={onNavigate}
-      aria-current={active ? 'page' : undefined}
-      title={collapsed ? label : undefined}
-      className={cn(
-        'group flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium transition-colors duration-150',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-df-primary',
-        active
-          ? 'bg-df-primary/10 text-df-primary-light'
-          : 'text-df-muted hover:bg-df-surface hover:text-df-fg',
-        collapsed && 'justify-center px-2'
-      )}
-    >
+  const Icon = item.icon
+  const className = cn(
+    'group flex w-full items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium transition-colors duration-150',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-df-primary',
+    collapsed && 'justify-center px-2',
+    item.disabled
+      ? 'cursor-not-allowed text-df-muted-fg opacity-50'
+      : active
+        ? 'bg-df-primary/10 text-df-primary-light'
+        : 'text-df-muted hover:bg-df-surface hover:text-df-fg'
+  )
+
+  const content = (
+    <>
       <Icon
         className={cn(
           'size-[18px] shrink-0',
-          active ? 'text-df-primary' : 'text-df-muted-fg group-hover:text-df-fg'
+          item.disabled
+            ? 'text-df-muted-fg'
+            : active
+              ? 'text-df-primary'
+              : 'text-df-muted-fg group-hover:text-df-fg'
         )}
       />
-      {!collapsed && <span className="truncate">{label}</span>}
+      {!collapsed && (
+        <span className="flex min-w-0 flex-1 items-center justify-between gap-2 truncate">
+          <span className="truncate">{item.label}</span>
+          {item.disabled && (
+            <span className="shrink-0 text-[10px] font-normal text-df-muted-fg">
+              Pronto
+            </span>
+          )}
+        </span>
+      )}
+    </>
+  )
+
+  if (item.disabled || !item.href) {
+    const disabledEl = (
+      <span
+        className={className}
+        aria-disabled="true"
+        title={collapsed ? `${item.label} (próximamente)` : undefined}
+      >
+        {content}
+      </span>
+    )
+    return collapsed ? (
+      <Tooltip content={`${item.label} · Próximamente`}>{disabledEl}</Tooltip>
+    ) : (
+      disabledEl
+    )
+  }
+
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      aria-current={active ? 'page' : undefined}
+      title={collapsed ? item.label : undefined}
+      className={className}
+    >
+      {content}
     </Link>
   )
 }
@@ -114,7 +172,7 @@ function SidebarContent({
         <Link
           href="/admin"
           onClick={onNavigate}
-          className="min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-df-primary rounded-[var(--radius-md)]"
+          className="min-w-0 rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-df-primary"
         >
           <Logo showWordmark={!collapsed} size="sm" />
         </Link>
@@ -136,7 +194,7 @@ function SidebarContent({
             size="icon-sm"
             aria-label="Expandir menú"
             onClick={() => onCollapsedChange(false)}
-            className="absolute top-3 right-2"
+            className="absolute right-2 top-3"
           >
             <PanelLeft />
           </Button>
@@ -148,12 +206,10 @@ function SidebarContent({
         className={cn('flex-1 space-y-1 overflow-y-auto p-3 df-scrollbar', collapsed && 'pt-10')}
       >
         {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={`${item.label}-${item.href}`}
-            href={item.href}
-            label={item.label}
-            icon={item.icon}
-            active={item.match(pathname)}
+          <NavItemRow
+            key={item.label}
+            item={item}
+            active={Boolean(item.match?.(pathname))}
             collapsed={collapsed}
             onNavigate={onNavigate}
           />
@@ -189,7 +245,8 @@ function SidebarContent({
 }
 
 /**
- * Sidebar desktop + drawer móvil. Solo enlaza rutas reales existentes.
+ * Sidebar desktop + drawer móvil. Solo enlaza rutas reales;
+ * Medios/Configuración aparecen deshabilitados (sin 404).
  */
 export function AppSidebar({
   email,
@@ -200,7 +257,6 @@ export function AppSidebar({
 }: AppSidebarProps) {
   return (
     <>
-      {/* Desktop */}
       <aside
         className={cn(
           'relative hidden h-screen shrink-0 flex-col border-r border-df-border bg-df-bg-secondary lg:flex',
@@ -217,7 +273,6 @@ export function AppSidebar({
         />
       </aside>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button

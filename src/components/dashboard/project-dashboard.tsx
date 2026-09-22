@@ -2,11 +2,13 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Archive,
   ArrowUpRight,
   CheckCircle2,
   FileText,
+  MoreHorizontal,
   Music,
   Pencil,
   Plus,
@@ -18,6 +20,13 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { EmptyState } from '@/components/ui/empty-state'
 import { StatusBadge } from '@/components/ui/status-badge'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { formatRelativeDate } from '@/lib/format'
 import type { ProjectStatus } from '@/types'
@@ -76,6 +85,134 @@ function StatCard({
           <Icon className="size-5" />
         </span>
       </div>
+    </div>
+  )
+}
+
+function ProjectRowActions({ project }: { project: DashboardProject }) {
+  const router = useRouter()
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Link
+        href={`/admin/projects/${project.id}/edit`}
+        className={buttonVariants({ variant: 'primary', size: 'sm' })}
+      >
+        <Pencil className="size-3.5" />
+        Editar
+      </Link>
+
+      <div className="hidden items-center gap-1.5 sm:flex lg:hidden">
+        <Link
+          href={`/admin/projects/${project.id}/media#audio-experiencia`}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        >
+          <Music className="size-3.5" />
+          Audio
+        </Link>
+        <Link
+          href={`/admin/projects/${project.id}/publish`}
+          className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+        >
+          <Rocket className="size-3.5" />
+          Publicar
+        </Link>
+      </div>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className={cn(
+            buttonVariants({ variant: 'outline', size: 'icon-sm' }),
+            'hidden lg:inline-flex'
+          )}
+          aria-label="Más acciones"
+        >
+          <MoreHorizontal className="size-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => router.push(`/admin/projects/${project.id}/edit`)}>
+            <Pencil className="size-3.5" />
+            Escenas
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              router.push(`/admin/projects/${project.id}/media#audio-experiencia`)
+            }
+          >
+            <Music className="size-3.5" />
+            Audio y medios
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => router.push(`/admin/projects/${project.id}/publish`)}
+          >
+            <Rocket className="size-3.5" />
+            Publicar
+          </DropdownMenuItem>
+          {project.status === 'published' && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  window.open(`/p/${project.slug}`, '_blank', 'noopener,noreferrer')
+                }
+              >
+                <ArrowUpRight className="size-3.5" />
+                Ver experiencia
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'sm:hidden')}
+          aria-label="Más acciones"
+        >
+          <MoreHorizontal className="size-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            onClick={() =>
+              router.push(`/admin/projects/${project.id}/media#audio-experiencia`)
+            }
+          >
+            <Music className="size-3.5" />
+            Audio y medios
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => router.push(`/admin/projects/${project.id}/publish`)}
+          >
+            <Rocket className="size-3.5" />
+            Publicar
+          </DropdownMenuItem>
+          {project.status === 'published' && (
+            <DropdownMenuItem
+              onClick={() =>
+                window.open(`/p/${project.slug}`, '_blank', 'noopener,noreferrer')
+              }
+            >
+              <ArrowUpRight className="size-3.5" />
+              Ver
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {project.status === 'published' && (
+        <Link
+          href={`/p/${project.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            buttonVariants({ variant: 'success', size: 'sm' }),
+            'hidden sm:inline-flex lg:hidden'
+          )}
+        >
+          Ver
+          <ArrowUpRight className="size-3.5" />
+        </Link>
+      )}
     </div>
   )
 }
@@ -225,9 +362,12 @@ export function ProjectDashboard({
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="truncate text-base font-medium text-df-fg">
+                      <Link
+                        href={`/admin/projects/${project.id}/edit`}
+                        className="truncate text-base font-medium text-df-fg transition-colors hover:text-df-primary-light"
+                      >
                         {project.name || 'Sin nombre'}
-                      </h3>
+                      </Link>
                       <StatusBadge status={project.status} />
                     </div>
                     <p className="mt-1 truncate text-sm text-df-muted">
@@ -237,40 +377,7 @@ export function ProjectDashboard({
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link
-                      href={`/admin/projects/${project.id}/edit`}
-                      className={buttonVariants({ variant: 'secondary', size: 'sm' })}
-                    >
-                      <Pencil className="size-3.5" />
-                      Escenas
-                    </Link>
-                    <Link
-                      href={`/admin/projects/${project.id}/media#audio-experiencia`}
-                      className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                    >
-                      <Music className="size-3.5" />
-                      Audio
-                    </Link>
-                    <Link
-                      href={`/admin/projects/${project.id}/publish`}
-                      className={buttonVariants({ variant: 'primary', size: 'sm' })}
-                    >
-                      <Rocket className="size-3.5" />
-                      Publicar
-                    </Link>
-                    {project.status === 'published' && (
-                      <Link
-                        href={`/p/${project.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={buttonVariants({ variant: 'success', size: 'sm' })}
-                      >
-                        Ver
-                        <ArrowUpRight className="size-3.5" />
-                      </Link>
-                    )}
-                  </div>
+                  <ProjectRowActions project={project} />
                 </div>
               </li>
             ))}
@@ -293,7 +400,6 @@ export function ProjectDashboard({
         </ol>
       </section>
 
-      {/* FAB móvil */}
       <Link
         href="/admin/projects/new"
         className={cn(

@@ -76,6 +76,7 @@ export function MediaPageClient({
             projectId={projectId}
             assets={assets}
             onRefresh={refresh}
+            showTabs
           />
         </div>
       </section>

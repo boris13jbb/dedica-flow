@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useCallback, useState, useRef } from 'react'
-import { ArrowLeft, Save, Loader2, SlidersHorizontal, X, Eye, Rocket } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, Eye, Rocket, Clapperboard, MonitorPlay, SlidersHorizontal } from 'lucide-react'
 import Link from 'next/link'
 import { useShallow } from 'zustand/react/shallow'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -56,7 +56,8 @@ interface EditorClientProps {
 
 export function EditorClient({ project, initialScenes }: EditorClientProps) {
   const hydratedRef = useRef(false)
-  const [showInspector, setShowInspector] = useState(false)
+  /** Vista activa en viewport < lg (móvil/tablet): no mostrar 3 columnas */
+  const [mobilePane, setMobilePane] = useState<'scenes' | 'preview' | 'props'>('preview')
   
   const {
     scenes,
@@ -224,7 +225,9 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
 
   const handleSelectScene = (sceneId: string | null) => {
     selectScene(sceneId)
-    if (sceneId) setShowInspector(true)
+    if (sceneId) {
+      setMobilePane('props')
+    }
   }
 
   const inspectorBody = selectedScene ? (
@@ -317,17 +320,6 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
 
             <Button
               type="button"
-              size="sm"
-              variant="secondary"
-              className="lg:hidden"
-              onClick={() => setShowInspector(true)}
-            >
-              <SlidersHorizontal className="size-4" />
-              <span className="hidden xs:inline">Ajustes</span>
-            </Button>
-
-            <Button
-              type="button"
               onClick={() => void handleSave()}
               disabled={!isDirty || isSaving}
               size="sm"
@@ -335,7 +327,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
               loading={isSaving}
             >
               <Save className="size-3.5" />
-              Guardar
+              <span className="hidden sm:inline">Guardar</span>
             </Button>
           </div>
         </div>
@@ -345,8 +337,9 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        <aside className="flex w-[280px] shrink-0 flex-col border-r border-df-border bg-df-bg-secondary sm:w-72">
+      {/* Desktop / tablet grande: 3 columnas */}
+      <div className="hidden min-h-0 flex-1 overflow-hidden lg:flex">
+        <aside className="flex w-[280px] shrink-0 flex-col border-r border-df-border bg-df-bg-secondary xl:w-[290px]">
           <div className="border-b border-df-border px-4 py-3">
             <p className="text-xs font-medium uppercase tracking-wider text-df-muted-fg">
               Escenas
@@ -377,7 +370,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
           />
         </div>
 
-        <aside className="hidden w-80 shrink-0 flex-col border-l border-df-border bg-df-bg-secondary lg:flex xl:w-[320px]">
+        <aside className="flex w-[320px] shrink-0 flex-col border-l border-df-border bg-df-bg-secondary xl:w-[340px]">
           <div className="border-b border-df-border px-4 py-3">
             <p className="text-xs font-medium uppercase tracking-wider text-df-muted-fg">
               Propiedades
@@ -392,40 +385,86 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
         </aside>
       </div>
 
-      {showInspector && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            aria-label="Cerrar panel"
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setShowInspector(false)}
-          />
-          <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-[var(--radius-2xl)] border border-df-border bg-df-card shadow-[var(--shadow-elevated)]">
-            <div className="flex items-center justify-between border-b border-df-border px-4 py-3">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-df-muted-fg">
-                  Propiedades
-                </p>
-                <p className="text-sm text-df-fg">
+      {/* Móvil / tablet: una sola vista + tabs inferiores */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {mobilePane === 'scenes' && (
+            <div className="flex h-full flex-col bg-df-bg-secondary">
+              <div className="border-b border-df-border px-4 py-3">
+                <p className="text-sm font-medium text-df-fg">Escenas</p>
+                <p className="text-xs text-df-muted">Toca una escena para editarla</p>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">
+                <SceneList
+                  scenes={scenes}
+                  selectedSceneId={selectedSceneId}
+                  onSelectScene={handleSelectScene}
+                  onReorderScenes={handleReorderScenes}
+                  onToggleEnabled={handleToggleEnabled}
+                  onDuplicateScene={handleDuplicateScene}
+                  onDeleteScene={handleDeleteScene}
+                  onAddScene={handleAddScene}
+                />
+              </div>
+            </div>
+          )}
+          {mobilePane === 'preview' && (
+            <div className="h-full bg-black">
+              <PreviewPanel
+                device={previewDevice}
+                onDeviceChange={setPreviewDevice}
+                projectName={project.name}
+                projectSlug={project.slug}
+                scenes={scenes}
+              />
+            </div>
+          )}
+          {mobilePane === 'props' && (
+            <div className="flex h-full flex-col bg-df-bg-secondary">
+              <div className="border-b border-df-border px-4 py-3">
+                <p className="text-sm font-medium text-df-fg">Ajustes</p>
+                <p className="text-xs text-df-muted">
                   {selectedScene
                     ? `Editando: ${selectedScene.name}`
-                    : 'Selecciona una escena'}
+                    : 'Selecciona una escena primero'}
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => setShowInspector(false)}
-                aria-label="Cerrar"
-              >
-                <X />
-              </Button>
+              <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">{inspectorBody}</div>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto df-scrollbar">{inspectorBody}</div>
-          </div>
+          )}
         </div>
-      )}
+
+        <nav
+          aria-label="Vistas del editor"
+          className="flex shrink-0 border-t border-df-border bg-df-bg-secondary pb-[env(safe-area-inset-bottom)]"
+        >
+          {(
+            [
+              { id: 'scenes' as const, label: 'Escenas', icon: Clapperboard },
+              { id: 'preview' as const, label: 'Preview', icon: MonitorPlay },
+              { id: 'props' as const, label: 'Ajustes', icon: SlidersHorizontal },
+            ] as const
+          ).map((tab) => {
+            const Icon = tab.icon
+            const active = mobilePane === tab.id
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                aria-current={active ? 'page' : undefined}
+                onClick={() => setMobilePane(tab.id)}
+                className={cn(
+                  'flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 px-2 py-2 text-[11px] font-medium transition-colors',
+                  active ? 'text-df-primary' : 'text-df-muted hover:text-df-fg'
+                )}
+              >
+                <Icon className="size-5" />
+                {tab.label}
+              </button>
+            )
+          })}
+        </nav>
+      </div>
     </div>
   )
 }
