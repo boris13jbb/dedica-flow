@@ -39,8 +39,6 @@ export default function LoginPage() {
         return
       }
 
-      // remember: la sesión de Supabase ya persiste en localStorage por defecto;
-      // el checkbox documenta la intención UX sin cambiar el contrato de Auth.
       void remember
 
       router.push('/admin')
@@ -52,83 +50,94 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden df-atmosphere px-4 py-10">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.1),transparent_45%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-black text-df-fg">
+      <div className="pointer-events-none absolute inset-0 df-atmosphere" aria-hidden />
 
-      <div className="relative w-full max-w-[420px] animate-df-slide-up">
-        <div className="rounded-[var(--radius-2xl)] border border-df-border bg-df-card/90 p-6 shadow-[var(--shadow-elevated)] backdrop-blur-xl sm:p-8">
-          <div className="mb-8 text-center">
-            <div className="mb-5 flex justify-center">
-              <Logo size="lg" showWordmark={false} />
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-df-fg">
+      <div className="relative z-[1] grid min-h-screen lg:grid-cols-[minmax(320px,440px)_1fr]">
+        <section className="flex flex-col justify-center border-r border-df-border/80 bg-black/55 px-6 py-10 backdrop-blur-md sm:px-10">
+          <div className="mx-auto w-full max-w-[360px] animate-df-slide-up">
+            <Logo size="md" />
+            <p className="mt-3 text-sm text-df-muted">
+              Crea experiencias que dejan huella.
+            </p>
+
+            <h1 className="mt-8 text-2xl font-semibold tracking-tight text-df-fg">
               DedicaFlow
             </h1>
-            <p className="mt-2 text-sm text-df-muted">{appConfig.tagline}</p>
-            <p className="mt-1 font-serif text-sm italic text-df-muted-fg">
+            <p className="mt-1 text-sm text-df-muted-fg">{appConfig.tagline}</p>
+
+            <form onSubmit={handleLogin} className="mt-8 space-y-4" noValidate>
+              <div className="space-y-2">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="tu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                  error={Boolean(error)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  error={Boolean(error)}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  disabled={loading}
+                  className="size-4 rounded border-df-border bg-df-surface accent-df-primary text-df-primary focus:ring-2 focus:ring-df-primary"
+                />
+                <Label htmlFor="remember" className="font-normal text-df-muted">
+                  Recordarme
+                </Label>
+              </div>
+
+              {error && (
+                <div
+                  role="alert"
+                  className="rounded-[var(--radius-md)] border border-df-error/40 bg-df-error/10 px-3 py-2.5 text-sm text-red-300"
+                >
+                  {error}
+                </div>
+              )}
+
+              <Button type="submit" className="h-11 w-full rounded-full" disabled={loading} loading={loading}>
+                {loading ? 'Iniciando sesión…' : 'Iniciar sesión'}
+              </Button>
+            </form>
+          </div>
+        </section>
+
+        <aside className="relative hidden min-h-screen lg:block" aria-hidden>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(212,175,55,0.14),transparent_42%)]" />
+          <div className="absolute inset-x-16 bottom-16 max-w-md">
+            <p className="font-serif text-3xl italic leading-snug text-df-fg/90">
               Historias que se viven.
             </p>
+            <p className="mt-3 text-sm text-df-muted">
+              Convierte emociones en experiencias inolvidables.
+            </p>
           </div>
-
-          <form onSubmit={handleLogin} className="space-y-4" noValidate>
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="tu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                error={Boolean(error)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                error={Boolean(error)}
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                id="remember"
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                disabled={loading}
-                className="size-4 rounded border-df-border bg-df-surface accent-df-primary text-df-primary focus:ring-2 focus:ring-df-primary"
-              />
-              <Label htmlFor="remember" className="font-normal text-df-muted">
-                Recordarme
-              </Label>
-            </div>
-
-            {error && (
-              <div
-                role="alert"
-                className="rounded-[var(--radius-md)] border border-df-error/40 bg-df-error/10 px-3 py-2.5 text-sm text-red-300"
-              >
-                {error}
-              </div>
-            )}
-
-            <Button type="submit" className="h-11 w-full" disabled={loading} loading={loading}>
-              {loading ? 'Iniciando sesión…' : 'Iniciar sesión'}
-            </Button>
-          </form>
-        </div>
+        </aside>
       </div>
     </div>
   )

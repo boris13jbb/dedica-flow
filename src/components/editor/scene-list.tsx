@@ -60,27 +60,26 @@ export function SceneList({
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-zinc-800">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold text-zinc-50">Escenas</h2>
-          <span className="text-sm text-zinc-400">{scenes.length}</span>
-        </div>
-        <Button
-          onClick={onAddScene}
-          className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-50"
-          size="sm"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Añadir Escena
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-3 border-b border-df-border px-4 py-3">
+        <p className="text-xs text-df-muted">
+          {scenes.length === 0
+            ? 'Sin momentos aún'
+            : `${scenes.length} momento${scenes.length === 1 ? '' : 's'}`}
+        </p>
+        <Button type="button" onClick={onAddScene} size="sm" variant="primary">
+          <Plus className="size-4" />
+          Añadir
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 df-scrollbar">
         {scenes.length === 0 ? (
-          <div className="text-center py-12 text-zinc-500">
-            <p className="mb-2">No hay escenas aún</p>
-            <p className="text-sm">Añade tu primera escena para comenzar</p>
+          <div className="px-2 py-12 text-center text-df-muted">
+            <p className="mb-1 text-sm text-df-fg">La historia está en blanco</p>
+            <p className="text-xs text-df-muted-fg">
+              Añade el primer momento para comenzar la narrativa.
+            </p>
           </div>
         ) : (
           <DndContext
@@ -92,17 +91,23 @@ export function SceneList({
               items={scenes.map((s) => s.id)}
               strategy={verticalListSortingStrategy}
             >
-              {scenes.map((scene) => (
-                <SceneListItem
-                  key={scene.id}
-                  scene={scene}
-                  isSelected={scene.id === selectedSceneId}
-                  onSelect={() => onSelectScene(scene.id)}
-                  onToggleEnabled={() => onToggleEnabled(scene.id)}
-                  onDuplicate={() => onDuplicateScene(scene.id)}
-                  onDelete={() => onDeleteScene(scene.id)}
+              <ol className="relative space-y-2 pl-1">
+                <span
+                  aria-hidden
+                  className="absolute bottom-3 left-[22px] top-3 w-px bg-df-border"
                 />
-              ))}
+                {scenes.map((scene) => (
+                  <SceneListItem
+                    key={scene.id}
+                    scene={scene}
+                    isSelected={scene.id === selectedSceneId}
+                    onSelect={() => onSelectScene(scene.id)}
+                    onToggleEnabled={() => onToggleEnabled(scene.id)}
+                    onDuplicate={() => onDuplicateScene(scene.id)}
+                    onDelete={() => onDeleteScene(scene.id)}
+                  />
+                ))}
+              </ol>
             </SortableContext>
           </DndContext>
         )}

@@ -55,7 +55,7 @@ export default async function AdminDashboardPage() {
     <AdminShell
       email={user.email}
       title="Tus experiencias"
-      subtitle="Crea, personaliza y publica experiencias audiovisuales únicas."
+      subtitle="Crea, gestiona y publica experiencias audiovisuales interactivas."
       actions={
         <Link
           href="/admin/projects/new"

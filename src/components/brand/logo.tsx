@@ -51,11 +51,11 @@ function Logo({ className, showWordmark = true, size = 'md' }: LogoProps) {
     <span className={cn('inline-flex items-center gap-2.5', className)}>
       <span
         className={cn(
-          'inline-flex shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-df-primary text-df-primary-fg shadow-[var(--shadow-glow)]',
+          'inline-flex shrink-0 items-center justify-center text-df-primary',
           s.box
         )}
       >
-        <LogoMark size={s.icon} />
+        <LogoMark size={s.icon + 4} />
       </span>
       {showWordmark && (
         <span className={cn('font-semibold tracking-tight text-df-fg', s.text)}>

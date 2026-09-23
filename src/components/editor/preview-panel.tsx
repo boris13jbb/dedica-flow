@@ -70,7 +70,7 @@ export function PreviewPanel({
       size="sm"
       variant={device === id ? 'secondary' : 'ghost'}
       onClick={() => onDeviceChange(id)}
-      className={cn(device === id && 'bg-df-card text-df-fg')}
+      className={cn(device === id && 'bg-df-primary/12 text-df-primary-light')}
     >
       <Icon />
     </IconButton>

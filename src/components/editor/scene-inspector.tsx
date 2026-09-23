@@ -24,7 +24,7 @@ export function SceneInspector({ sceneType, config, onChange }: SceneInspectorPr
 
   if (!definition) {
     return (
-      <div className="p-4 text-center text-zinc-400">
+      <div className="p-4 text-center text-df-muted">
         Tipo de escena no válido
       </div>
     )
@@ -113,7 +113,7 @@ export function SceneInspector({ sceneType, config, onChange }: SceneInspectorPr
       
       default:
         return (
-          <div key={field.key} className="text-xs text-zinc-500">
+          <div key={field.key} className="text-xs text-df-muted-fg">
             Campo tipo &quot;{field.type}&quot; no implementado
           </div>
         )
@@ -123,10 +123,10 @@ export function SceneInspector({ sceneType, config, onChange }: SceneInspectorPr
   return (
     <div className="space-y-6 p-4">
       <div>
-        <h3 className="text-lg font-medium text-zinc-50 mb-1">
+        <h3 className="mb-1 text-lg font-medium text-df-fg">
           {definition.name}
         </h3>
-        <p className="text-sm text-zinc-400">{definition.description}</p>
+        <p className="text-sm text-df-muted">{definition.description}</p>
       </div>
 
       <div className="space-y-4">

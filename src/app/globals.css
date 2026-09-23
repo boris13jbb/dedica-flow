@@ -2,31 +2,37 @@
 
 /* ─── DedicaFlow Design Tokens ─── */
 :root {
-  --background: #0a0a0b;
-  --surface: #101012;
-  --surface-elevated: #161619;
-  --card: #18181b;
-  --card-hover: #202024;
-  --border: #27272a;
-  --border-hover: #3f3f46;
+  --background: #050505;
+  --surface: #0b0b0d;
+  --surface-elevated: #111114;
+  --card: #141418;
+  --card-hover: #1c1c21;
+  --border: #232329;
+  --border-hover: #3a3a42;
 
-  --foreground: #fafafa;
-  --muted-foreground: #a1a1aa;
-  --subtle-foreground: #71717a;
+  --foreground: #f7f4ee;
+  --muted-foreground: #b8b3a8;
+  --subtle-foreground: #7a756c;
 
   /* Aliases usados por utilidades existentes */
   --background-secondary: var(--surface);
   --muted: var(--muted-foreground);
   --muted-foreground-legacy: var(--subtle-foreground);
 
-  --primary: #f59e0b;
-  --primary-light: #fbbf24;
-  --primary-hover: #fcd34d;
-  --primary-foreground: #0a0a0b;
+  --primary: #d4af37;
+  --primary-light: #e8c55a;
+  --primary-hover: #f0d57a;
+  --primary-foreground: #0a0804;
+
+  --gold: var(--primary);
+  --gold-hover: var(--primary-hover);
+  --text-primary: var(--foreground);
+  --text-muted: var(--muted-foreground);
+  --destructive: #ef4444;
 
   --success: #22c55e;
   --warning: #f59e0b;
-  --error: #ef4444;
+  --error: var(--destructive);
   --info: #3b82f6;
 
   --radius-sm: 8px;
@@ -35,8 +41,8 @@
   --radius-xl: 16px;
   --radius-2xl: 20px;
 
-  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 24px rgba(245, 158, 11, 0.18);
+  --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 28px rgba(212, 175, 55, 0.16);
 
   --sidebar-width: 240px;
   --sidebar-collapsed: 72px;
@@ -58,10 +64,13 @@
   --color-df-fg: var(--foreground);
   --color-df-muted: var(--muted-foreground);
   --color-df-muted-fg: var(--subtle-foreground);
+  --color-df-gold: var(--gold);
+  --color-df-gold-hover: var(--gold-hover);
   --color-df-primary: var(--primary);
   --color-df-primary-light: var(--primary-light);
   --color-df-primary-hover: var(--primary-hover);
   --color-df-primary-fg: var(--primary-foreground);
+  --color-df-destructive: var(--destructive);
   --color-df-success: var(--success);
   --color-df-warning: var(--warning);
   --color-df-error: var(--error);
@@ -108,7 +117,7 @@ body {
 /* App background atmosphere */
 .df-atmosphere {
   background:
-    radial-gradient(ellipse at top, #1c1917 0%, #09090b 45%, #000000 100%);
+    radial-gradient(ellipse at 18% 0%, #16120c 0%, #080808 42%, #000000 100%);
 }
 
 .df-atmosphere::before {
@@ -117,8 +126,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 20% 15%, rgba(245, 158, 11, 0.08), transparent 40%),
-    radial-gradient(circle at 85% 5%, rgba(245, 158, 11, 0.05), transparent 30%);
+    radial-gradient(circle at 18% 12%, rgba(212, 175, 55, 0.09), transparent 38%),
+    radial-gradient(circle at 88% 8%, rgba(212, 175, 55, 0.04), transparent 28%);
 }
 
 /* Scrollbar subtle */
@@ -261,4 +270,56 @@ body {
 
 .animate-df-slide-up {
   animation: df-slide-up var(--duration-normal) var(--ease-out);
+}
+
+/* Shared cinematic chrome — prefer these over per-screen hex */
+.df-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.df-panel-elevated {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-elevated);
+}
+
+.df-gold-ring {
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.28);
+}
+
+.df-upload-zone {
+  border: 1px dashed var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  transition: border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.df-upload-zone:hover {
+  border-color: var(--gold);
+  background: var(--surface-elevated);
+}
+
+.df-progress {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.df-progress-bar {
+  height: 100%;
+  background: var(--gold);
+  transition: width 80ms linear;
+}
+
+/* Native audio sits inside cinematic panels without a white SaaS chrome */
+audio {
+  width: 100%;
+  height: 40px;
+  color-scheme: dark;
+  accent-color: var(--gold);
 }

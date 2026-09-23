@@ -4,17 +4,13 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  Archive,
   ArrowUpRight,
-  CheckCircle2,
-  FileText,
   MoreHorizontal,
   Music,
   Pencil,
   Plus,
   Rocket,
   Search,
-  Sparkles,
 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -64,36 +60,17 @@ interface ProjectDashboardProps {
   archivedCount: number
 }
 
-function StatCard({
+function CompactStat({
   label,
   value,
-  hint,
-  icon: Icon,
-  accent,
 }: {
   label: string
   value: number
-  hint: string
-  icon: React.ComponentType<{ className?: string }>
-  accent: string
 }) {
   return (
-    <div className="rounded-[var(--radius-xl)] border border-df-border bg-df-card p-5 transition-colors hover:border-df-border-hover">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-df-muted">{label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-df-fg">{value}</p>
-          <p className="mt-1 text-xs text-df-muted-fg">{hint}</p>
-        </div>
-        <span
-          className={cn(
-            'flex size-10 items-center justify-center rounded-[var(--radius-lg)]',
-            accent
-          )}
-        >
-          <Icon className="size-5" />
-        </span>
-      </div>
+    <div className="flex items-baseline gap-2">
+      <span className="text-2xl font-semibold tracking-tight text-df-fg">{value}</span>
+      <span className="text-sm text-df-muted">{label}</span>
     </div>
   )
 }
@@ -105,23 +82,23 @@ function ProjectRowActions({ project }: { project: DashboardProject }) {
     <div className="flex flex-wrap items-center gap-2">
       <Link
         href={`/admin/projects/${project.id}/edit`}
-        className={buttonVariants({ variant: 'primary', size: 'sm' })}
+        className={buttonVariants({ variant: 'ghost', size: 'sm' })}
       >
         <Pencil className="size-3.5" />
-        Editar
+        Escenas
       </Link>
 
-      <div className="hidden items-center gap-1.5 sm:flex lg:hidden">
+      <div className="hidden items-center gap-1 sm:flex">
         <Link
           href={`/admin/projects/${project.id}/media#audio-experiencia`}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >
           <Music className="size-3.5" />
           Audio
         </Link>
         <Link
           href={`/admin/projects/${project.id}/publish`}
-          className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >
           <Rocket className="size-3.5" />
           Publicar
@@ -214,8 +191,8 @@ function ProjectRowActions({ project }: { project: DashboardProject }) {
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            buttonVariants({ variant: 'success', size: 'sm' }),
-            'hidden sm:inline-flex lg:hidden'
+            buttonVariants({ variant: 'ghost', size: 'sm' }),
+            'hidden sm:inline-flex'
           )}
         >
           Ver
@@ -248,52 +225,17 @@ export function ProjectDashboard({
   }, [projects, query, filter])
 
   return (
-    <div className="space-y-8">
-      <section className="grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label="Borradores"
-          value={draftCount}
-          hint="En edición"
-          icon={FileText}
-          accent="bg-df-primary/10 text-df-primary-light"
-        />
-        <StatCard
-          label="Publicados"
-          value={publishedCount}
-          hint="Listos para compartir"
-          icon={CheckCircle2}
-          accent="bg-df-success/10 text-df-success"
-        />
-        <StatCard
-          label="Archivados"
-          value={archivedCount}
-          hint="Guardados"
-          icon={Archive}
-          accent="bg-df-surface text-df-muted"
-        />
+    <div className="space-y-6">
+      <section className="flex flex-wrap items-end justify-between gap-4 border-b border-df-border pb-5">
+        <div className="flex flex-wrap gap-8">
+          <CompactStat label="en edición" value={draftCount} />
+          <CompactStat label="publicados" value={publishedCount} />
+          <CompactStat label="archivados" value={archivedCount} />
+        </div>
       </section>
 
-      <section className="overflow-hidden rounded-[var(--radius-xl)] border border-df-border bg-df-card">
-        <div className="flex flex-col gap-4 border-b border-df-border px-5 py-5 sm:px-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-df-fg">Proyectos</h2>
-              <p className="mt-1 text-sm text-df-muted">
-                Edita escenas, configura audio y publica tu experiencia.
-              </p>
-            </div>
-            <Link
-              href="/admin/projects/new"
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'sm' }),
-                'self-start'
-              )}
-            >
-              <Sparkles className="size-3.5 text-df-primary" />
-              Empezar desde plantilla
-            </Link>
-          </div>
-
+      <section className="overflow-hidden rounded-[var(--radius-xl)] border border-df-border bg-df-card/80">
+        <div className="flex flex-col gap-4 border-b border-df-border px-5 py-4 sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-df-muted-fg" />
@@ -322,7 +264,7 @@ export function ProjectDashboard({
                     className={cn(
                       'rounded-[var(--radius-md)] px-2.5 py-1.5 text-xs font-medium transition-colors',
                       active
-                        ? 'bg-df-card text-df-fg shadow-sm'
+                        ? 'bg-df-primary/12 text-df-primary-light'
                         : 'text-df-muted hover:text-df-fg'
                     )}
                   >
@@ -394,20 +336,9 @@ export function ProjectDashboard({
         )}
       </section>
 
-      <section className="rounded-[var(--radius-xl)] border border-dashed border-df-border bg-df-surface/30 p-5 sm:p-6">
-        <h3 className="text-sm font-medium text-df-fg">Flujo recomendado</h3>
-        <ol className="mt-3 grid gap-3 text-sm text-df-muted sm:grid-cols-3">
-          <li className="rounded-[var(--radius-lg)] bg-df-bg/50 p-3 ring-1 ring-df-border">
-            <span className="font-medium text-df-primary">1.</span> Edita las escenas
-          </li>
-          <li className="rounded-[var(--radius-lg)] bg-df-bg/50 p-3 ring-1 ring-df-border">
-            <span className="font-medium text-df-primary">2.</span> Inserta el audio y los medios
-          </li>
-          <li className="rounded-[var(--radius-lg)] bg-df-bg/50 p-3 ring-1 ring-df-border">
-            <span className="font-medium text-df-primary">3.</span> Publica y comparte /p/...
-          </li>
-        </ol>
-      </section>
+      <p className="text-xs text-df-muted-fg">
+        Escenas → Audio → Publicar. Así se construye cada experiencia.
+      </p>
 
       <Link
         href="/admin/projects/new"

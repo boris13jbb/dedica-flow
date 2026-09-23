@@ -65,7 +65,7 @@ function TabsTrigger({ value, className, children, ...props }: TabsTriggerProps)
         'inline-flex h-8 items-center justify-center rounded-[var(--radius-md)] px-3 text-xs font-medium transition-colors duration-150',
         'text-df-muted hover:text-df-fg',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-df-primary',
-        isActive && 'bg-df-card text-df-fg shadow-sm',
+        isActive && 'bg-df-primary/12 text-df-primary-light',
         className
       )}
       onClick={() => onValueChange(value)}
