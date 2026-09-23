@@ -86,7 +86,7 @@ function NavItemRow({
     item.disabled
       ? 'cursor-not-allowed text-df-muted-fg opacity-50'
       : active
-        ? 'bg-df-primary/10 text-df-primary-light'
+        ? 'bg-df-primary/10 text-df-fg'
         : 'text-df-muted hover:bg-df-surface hover:text-df-fg'
   )
 

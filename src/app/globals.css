@@ -2,27 +2,27 @@
 
 /* ─── DedicaFlow Design Tokens ─── */
 :root {
-  --background: #0a0a0b;
-  --surface: #101012;
-  --surface-elevated: #161619;
-  --card: #18181b;
-  --card-hover: #202024;
-  --border: #27272a;
-  --border-hover: #3f3f46;
+  --background: #050505;
+  --surface: #0b0b0d;
+  --surface-elevated: #111114;
+  --card: #141418;
+  --card-hover: #1c1c21;
+  --border: #232329;
+  --border-hover: #3a3a42;
 
-  --foreground: #fafafa;
-  --muted-foreground: #a1a1aa;
-  --subtle-foreground: #71717a;
+  --foreground: #f7f4ee;
+  --muted-foreground: #b8b3a8;
+  --subtle-foreground: #7a756c;
 
   /* Aliases usados por utilidades existentes */
   --background-secondary: var(--surface);
   --muted: var(--muted-foreground);
   --muted-foreground-legacy: var(--subtle-foreground);
 
-  --primary: #f59e0b;
-  --primary-light: #fbbf24;
-  --primary-hover: #fcd34d;
-  --primary-foreground: #0a0a0b;
+  --primary: #d4af37;
+  --primary-light: #e8c55a;
+  --primary-hover: #f0d57a;
+  --primary-foreground: #0a0804;
 
   --success: #22c55e;
   --warning: #f59e0b;
@@ -35,8 +35,8 @@
   --radius-xl: 16px;
   --radius-2xl: 20px;
 
-  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 24px rgba(245, 158, 11, 0.18);
+  --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 28px rgba(212, 175, 55, 0.16);
 
   --sidebar-width: 240px;
   --sidebar-collapsed: 72px;
@@ -108,7 +108,7 @@ body {
 /* App background atmosphere */
 .df-atmosphere {
   background:
-    radial-gradient(ellipse at top, #1c1917 0%, #09090b 45%, #000000 100%);
+    radial-gradient(ellipse at 18% 0%, #16120c 0%, #080808 42%, #000000 100%);
 }
 
 .df-atmosphere::before {
@@ -117,8 +117,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 20% 15%, rgba(245, 158, 11, 0.08), transparent 40%),
-    radial-gradient(circle at 85% 5%, rgba(245, 158, 11, 0.05), transparent 30%);
+    radial-gradient(circle at 18% 12%, rgba(212, 175, 55, 0.09), transparent 38%),
+    radial-gradient(circle at 88% 8%, rgba(212, 175, 55, 0.04), transparent 28%);
 }
 
 /* Scrollbar subtle */

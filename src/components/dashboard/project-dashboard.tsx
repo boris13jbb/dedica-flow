@@ -4,17 +4,13 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  Archive,
   ArrowUpRight,
-  CheckCircle2,
-  FileText,
   MoreHorizontal,
   Music,
   Pencil,
   Plus,
   Rocket,
   Search,
-  Sparkles,
 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -64,36 +60,17 @@ interface ProjectDashboardProps {
   archivedCount: number
 }
 
-function StatCard({
+function CompactStat({
   label,
   value,
-  hint,
-  icon: Icon,
-  accent,
 }: {
   label: string
   value: number
-  hint: string
-  icon: React.ComponentType<{ className?: string }>
-  accent: string
 }) {
   return (
-    <div className="rounded-[var(--radius-xl)] border border-df-border bg-df-card p-5 transition-colors hover:border-df-border-hover">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-df-muted">{label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-df-fg">{value}</p>
-          <p className="mt-1 text-xs text-df-muted-fg">{hint}</p>
-        </div>
-        <span
-          className={cn(
-            'flex size-10 items-center justify-center rounded-[var(--radius-lg)]',
-            accent
-          )}
-        >
-          <Icon className="size-5" />
-        </span>
-      </div>
+    <div className="flex items-baseline gap-2">
+      <span className="text-2xl font-semibold tracking-tight text-df-fg">{value}</span>
+      <span className="text-sm text-df-muted">{label}</span>
     </div>
   )
 }
@@ -105,23 +82,23 @@ function ProjectRowActions({ project }: { project: DashboardProject }) {
     <div className="flex flex-wrap items-center gap-2">
       <Link
         href={`/admin/projects/${project.id}/edit`}
-        className={buttonVariants({ variant: 'primary', size: 'sm' })}
+        className={buttonVariants({ variant: 'ghost', size: 'sm' })}
       >
         <Pencil className="size-3.5" />
-        Editar
+        Escenas
       </Link>
 
-      <div className="hidden items-center gap-1.5 sm:flex lg:hidden">
+      <div className="hidden items-center gap-1 sm:flex">
         <Link
           href={`/admin/projects/${project.id}/media#audio-experiencia`}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >
           <Music className="size-3.5" />
           Audio
         </Link>
         <Link
           href={`/admin/projects/${project.id}/publish`}
-          className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >
           <Rocket className="size-3.5" />
           Publicar
@@ -248,50 +225,24 @@ export function ProjectDashboard({
   }, [projects, query, filter])
 
   return (
-    <div className="space-y-8">
-      <section className="grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label="Borradores"
-          value={draftCount}
-          hint="En edición"
-          icon={FileText}
-          accent="bg-df-primary/10 text-df-primary-light"
-        />
-        <StatCard
-          label="Publicados"
-          value={publishedCount}
-          hint="Listos para compartir"
-          icon={CheckCircle2}
-          accent="bg-df-success/10 text-df-success"
-        />
-        <StatCard
-          label="Archivados"
-          value={archivedCount}
-          hint="Guardados"
-          icon={Archive}
-          accent="bg-df-surface text-df-muted"
-        />
+    <div className="space-y-6">
+      <section className="flex flex-wrap items-end justify-between gap-4 border-b border-df-border pb-5">
+        <div className="flex flex-wrap gap-8">
+          <CompactStat label="en edición" value={draftCount} />
+          <CompactStat label="publicados" value={publishedCount} />
+          <CompactStat label="archivados" value={archivedCount} />
+        </div>
       </section>
 
-      <section className="overflow-hidden rounded-[var(--radius-xl)] border border-df-border bg-df-card">
+      <section className="overflow-hidden rounded-[var(--radius-xl)] border border-df-border bg-df-card/80">
         <div className="flex flex-col gap-4 border-b border-df-border px-5 py-5 sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-df-fg">Proyectos</h2>
+              <h2 className="text-lg font-semibold text-df-fg">Tus experiencias</h2>
               <p className="mt-1 text-sm text-df-muted">
-                Edita escenas, configura audio y publica tu experiencia.
+                Crea, gestiona y publica experiencias audiovisuales.
               </p>
             </div>
-            <Link
-              href="/admin/projects/new"
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'sm' }),
-                'self-start'
-              )}
-            >
-              <Sparkles className="size-3.5 text-df-primary" />
-              Empezar desde plantilla
-            </Link>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
