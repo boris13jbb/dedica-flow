@@ -7,6 +7,15 @@ y este proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Agregado
+- Scene Builder V2: catálogo cinematográfico para agregar escenas, menú de acciones (duplicar / activar / eliminar) y ConfirmDialog.
+- MediaPicker reutilizable: selección de imágenes desde Biblioteca (única y múltiple), integrado en Photo Orbit y Flores.
+- Duplicar proyecto desde el dashboard: copia en borrador con slug nuevo, sin historial de publicación.
+
+### Cambiado
+- Reordenamiento de escenas con dnd-kit (feedback, teclado y persistencia inmediata).
+- Photo Orbit prioriza “Seleccionar fotos de Biblioteca”; las URLs externas quedan como opción secundaria.
+
 ### Por Agregar
 - Sistema de notificaciones en tiempo real
 - Modo oscuro
