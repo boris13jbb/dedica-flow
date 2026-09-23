@@ -11,12 +11,14 @@ import { toast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
 import { useEditorStore, useRendererStore } from '@/stores'
 import { SceneList } from '@/components/editor/scene-list'
+import { SceneCatalog } from '@/components/editor/scene-catalog'
 import { PreviewPanel } from '@/components/editor/preview-panel'
 import { SceneInspector } from '@/components/editor/scene-inspector'
 import { ProjectWorkspaceNav } from '@/components/admin/project-workspace-nav'
+import { ConfirmDialog } from '@/components/ui/dialog'
 import { updateProjectScenes, createScene, deleteScene } from './actions'
 import type { Project, Scene, SceneType } from '@/types'
-import { getSceneDefinition } from '@/components/experience/registry'
+import { buildNewScenePayload, cloneSceneForDuplicate } from '@/lib/scene-builder'
 
 function scenesFingerprint(scenes: Scene[]) {
   return JSON.stringify(
@@ -58,6 +60,10 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
   const hydratedRef = useRef(false)
   /** Vista activa en viewport < lg (móvil/tablet): no mostrar 3 columnas */
   const [mobilePane, setMobilePane] = useState<'scenes' | 'preview' | 'props'>('preview')
+  const [catalogOpen, setCatalogOpen] = useState(false)
+  const [creatingScene, setCreatingScene] = useState(false)
+  const [scenePendingDelete, setScenePendingDelete] = useState<Scene | null>(null)
+  const [deletingScene, setDeletingScene] = useState(false)
   
   const {
     scenes,
@@ -70,6 +76,8 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
     setScenes,
     selectScene,
     updateScene,
+    addScene,
+    insertSceneAfter,
     removeScene,
     reorderScenes,
     setDirty,
@@ -149,77 +157,83 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
     return () => clearTimeout(timer)
   }, [isDirty, isSaving, scenes, handleSave])
 
-  const handleAddScene = async () => {
-    try {
-      const newPosition = scenes.length
-      const newScene = await createScene(project.id, {
-        scene_key: `scene-${Date.now()}`,
-        scene_type: 'message',
-        name: `Nueva escena ${newPosition + 1}`,
-        position: newPosition,
-        duration_ms: 5000,
-        trigger_mode: 'auto',
-        enabled: true,
-        config: (getSceneDefinition('message')?.defaultConfig || {}) as unknown as Record<string, never>,
-      })
+  const persistScenes = useCallback(
+    async (nextScenes: Scene[]) => {
+      await updateProjectScenes(project.id, nextScenes)
+      setDirty(false)
+      setLastSaved(new Date())
+    },
+    [project.id, setDirty, setLastSaved]
+  )
 
-      setScenes([...scenes, newScene as Scene])
-      selectScene((newScene as { id: string }).id)
+  const handleAddScene = async (type: SceneType) => {
+    setCreatingScene(true)
+    try {
+      const payload = buildNewScenePayload(type, useEditorStore.getState().scenes.length)
+      const created = (await createScene(project.id, {
+        ...payload,
+        config: payload.config as never,
+      })) as Scene
+      addScene(created)
+      setDirty(false)
+      setCatalogOpen(false)
+      toast.success('Escena añadida', created.name)
     } catch {
       toast.error('Error al crear escena')
+    } finally {
+      setCreatingScene(false)
     }
   }
 
-  const handleDeleteScene = async (sceneId: string) => {
-    if (!confirm('¿Eliminar esta escena?')) return
-
+  const handleConfirmDeleteScene = async () => {
+    if (!scenePendingDelete) return
+    setDeletingScene(true)
     try {
-      await deleteScene(project.id, sceneId)
-      removeScene(sceneId)
+      await deleteScene(project.id, scenePendingDelete.id)
+      removeScene(scenePendingDelete.id)
+      const remaining = useEditorStore.getState().scenes
+      await persistScenes(remaining)
+      toast.success('Escena eliminada', scenePendingDelete.name)
     } catch {
       toast.error('Error al eliminar escena')
+      throw new Error('delete-failed')
+    } finally {
+      setDeletingScene(false)
     }
   }
 
   const handleDuplicateScene = async (sceneId: string) => {
-    const scene = scenes.find((s) => s.id === sceneId)
+    const scene = useEditorStore.getState().scenes.find((item) => item.id === sceneId)
     if (!scene) return
 
     try {
-      const newScene = await createScene(project.id, {
-        scene_key: `${scene.scene_key}-copy-${Date.now()}`,
-        scene_type: scene.scene_type,
-        name: `${scene.name} (copia)`,
-        position: scene.position + 1,
-        duration_ms: scene.duration_ms,
-        trigger_mode: scene.trigger_mode,
-        enabled: scene.enabled,
-        config: scene.config as unknown as Record<string, never>,
-      })
-
-      const updatedScenes = [...scenes]
-      updatedScenes.splice(scene.position + 1, 0, newScene as Scene)
-      
-      setScenes(
-        updatedScenes.map((s, i) => ({
-          ...s,
-          position: i,
-        }))
-      )
+      const payload = cloneSceneForDuplicate(scene)
+      const created = (await createScene(project.id, {
+        ...payload,
+        config: payload.config as never,
+      })) as Scene
+      insertSceneAfter(scene.id, created)
+      await persistScenes(useEditorStore.getState().scenes)
+      toast.success('Escena duplicada', created.name)
     } catch {
       toast.error('Error al duplicar escena')
     }
   }
 
   const handleToggleEnabled = (sceneId: string) => {
-    const scene = scenes.find((s) => s.id === sceneId)
+    const scene = useEditorStore.getState().scenes.find((item) => item.id === sceneId)
     if (!scene) return
 
     updateScene(sceneId, { enabled: !scene.enabled })
   }
 
-  const handleReorderScenes = (sceneIds: string[]) => {
+  const handleReorderScenes = async (sceneIds: string[]) => {
     reorderScenes(sceneIds)
+    try {
+      await persistScenes(useEditorStore.getState().scenes)
+    } catch {
+      toast.error('Error al guardar', 'No se pudo persistir el nuevo orden.')
+    }
   }
 
   const handleSceneConfigChange = (config: Record<string, unknown>) => {
@@ -237,6 +251,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
   const inspectorBody = selectedScene ? (
     <SceneInspector
       sceneType={selectedScene.scene_type as SceneType}
+      projectId={project.id}
       config={
         (selectedScene.config &&
         typeof selectedScene.config === 'object' &&
@@ -358,8 +373,11 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
               onReorderScenes={handleReorderScenes}
               onToggleEnabled={handleToggleEnabled}
               onDuplicateScene={handleDuplicateScene}
-              onDeleteScene={handleDeleteScene}
-              onAddScene={handleAddScene}
+              onDeleteScene={(sceneId) => {
+                const scene = visibleScenes.find((item) => item.id === sceneId)
+                if (scene) setScenePendingDelete(scene)
+              }}
+              onAddScene={() => setCatalogOpen(true)}
             />
           </div>
         </aside>
@@ -406,8 +424,11 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
                   onReorderScenes={handleReorderScenes}
                   onToggleEnabled={handleToggleEnabled}
                   onDuplicateScene={handleDuplicateScene}
-                  onDeleteScene={handleDeleteScene}
-                  onAddScene={handleAddScene}
+                  onDeleteScene={(sceneId) => {
+                    const scene = visibleScenes.find((item) => item.id === sceneId)
+                    if (scene) setScenePendingDelete(scene)
+                  }}
+                  onAddScene={() => setCatalogOpen(true)}
                 />
               </div>
             </div>
@@ -469,6 +490,30 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
           })}
         </nav>
       </div>
+
+      <SceneCatalog
+        open={catalogOpen}
+        onOpenChange={setCatalogOpen}
+        creating={creatingScene}
+        onSelectType={(type) => void handleAddScene(type)}
+      />
+
+      <ConfirmDialog
+        open={Boolean(scenePendingDelete)}
+        onOpenChange={(open) => {
+          if (!open) setScenePendingDelete(null)
+        }}
+        title="Eliminar escena"
+        description={
+          scenePendingDelete
+            ? `Se eliminará “${scenePendingDelete.name}” de esta experiencia. Esta acción no se puede deshacer.`
+            : undefined
+        }
+        confirmLabel="Eliminar"
+        variant="destructive"
+        loading={deletingScene}
+        onConfirm={handleConfirmDeleteScene}
+      />
     </div>
   )
 }
