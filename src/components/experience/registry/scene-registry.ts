@@ -395,7 +395,9 @@ export const photoOrbitSceneDefinition: SceneDefinition<PhotoOrbitSceneConfig> =
       key: 'photos',
       label: 'URLs de fotos (una por línea)',
       type: 'textarea',
-      placeholder: 'https://...',
+      placeholder: 'https://ejemplo.com/foto.jpg',
+      description:
+        'Usa URLs directas de imagen (.jpg, .png, .webp) o archivos de Biblioteca. Los álbumes de Google Photos (photos.app.goo.gl) no funcionan.',
     },
     {
       key: 'radius',

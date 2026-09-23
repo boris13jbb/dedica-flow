@@ -59,4 +59,41 @@ describe('renderer-store scene skipping', () => {
       'message'
     )
   })
+
+  it('en flujo publicado omite photoOrbit con álbum inválido y continúa', () => {
+    const raw: ExperienceConfig = {
+      projectId: 'p1',
+      name: 'Demo',
+      slug: 'demo',
+      scenes: [
+        scene({ id: 'intro', sceneType: 'intro', enabled: true, config: {}, position: 0 }),
+        scene({
+          id: 'photos',
+          sceneType: 'photoOrbit',
+          enabled: true,
+          config: { photos: ['https://photos.app.goo.gl/heuVAFRz2xWhJF1R6'] },
+          position: 1,
+        }),
+        scene({
+          id: 'galaxy',
+          sceneType: 'galaxy',
+          enabled: true,
+          config: {},
+          position: 2,
+        }),
+      ],
+    }
+
+    const published = {
+      ...raw,
+      scenes: prepareScenesForPresentation(raw.scenes, 'published'),
+    }
+
+    expect(published.scenes[1]?.enabled).toBe(false)
+    useRendererStore.getState().setConfig(published)
+    useRendererStore.getState().nextScene()
+    expect(published.scenes[useRendererStore.getState().currentSceneIndex]?.sceneType).toBe(
+      'galaxy'
+    )
+  })
 })

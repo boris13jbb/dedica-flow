@@ -6,6 +6,8 @@ import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { useRendererStore } from '@/stores'
 import type { PhotoOrbitSceneConfig } from '@/components/experience/registry'
+import { ExperienceErrorBoundary } from '@/components/experience/renderer/error-boundary'
+import { PhotoCardErrorBoundary } from './photo-card-error-boundary'
 import { PhotoOrbitEmptyState } from './photo-orbit-empty-state'
 import { resolvePhotoOrbitView } from './photo-orbit-utils'
 
@@ -89,17 +91,28 @@ function PhotoOrbitSystem({ config, urls }: PhotoOrbitSystemProps) {
   return (
     <group ref={groupRef}>
       {photos.map((photo, i) => (
-        <PhotoCard
-          key={`${photo.url}-${i}`}
-          imageUrl={photo.url}
-          position={photo.position}
-          rotation={photo.rotation}
-          scale={config.cardScale}
-          borderRadius={config.borderRadius}
-        />
+        <PhotoCardErrorBoundary key={`${photo.url}-${i}`}>
+          <PhotoCard
+            imageUrl={photo.url}
+            position={photo.position}
+            rotation={photo.rotation}
+            scale={config.cardScale}
+            borderRadius={config.borderRadius}
+          />
+        </PhotoCardErrorBoundary>
       ))}
     </group>
   )
+}
+
+function PublishedPhotoOrbitFallback() {
+  const nextScene = useRendererStore((s) => s.nextScene)
+
+  useEffect(() => {
+    nextScene()
+  }, [nextScene])
+
+  return <div className="h-full w-full bg-zinc-950" aria-hidden data-testid="photo-orbit-skipped" />
 }
 
 interface PhotoOrbitSceneProps {
@@ -131,9 +144,20 @@ export function PhotoOrbitScene({
     return <PhotoOrbitEmptyState />
   }
 
+  if (view.kind === 'editor-invalid') {
+    return <PhotoOrbitEmptyState variant="invalid" />
+  }
+
   if (view.kind === 'published-skip') {
     return <div className="h-full w-full bg-zinc-950" aria-hidden data-testid="photo-orbit-skipped" />
   }
+
+  const loadFallback =
+    presentationMode === 'published' ? (
+      <PublishedPhotoOrbitFallback />
+    ) : (
+      <PhotoOrbitEmptyState variant="invalid" />
+    )
 
   return (
     <div
@@ -141,18 +165,20 @@ export function PhotoOrbitScene({
       style={{ backgroundColor: photoConfig.backgroundColor }}
       data-testid="photo-orbit-scene"
     >
-      <Canvas
-        camera={{ position: [0, 0, 15], fov: 60 }}
-        gl={{
-          antialias: quality !== 'low',
-          powerPreference: 'high-performance',
-        }}
-      >
-        <PhotoOrbitSystem config={photoConfig} urls={view.urls} />
-        <ambientLight intensity={0.6} />
-        <pointLight position={[10, 10, 10]} intensity={0.8} />
-        <pointLight position={[-10, -10, -10]} intensity={0.3} />
-      </Canvas>
+      <ExperienceErrorBoundary fallback={loadFallback}>
+        <Canvas
+          camera={{ position: [0, 0, 15], fov: 60 }}
+          gl={{
+            antialias: quality !== 'low',
+            powerPreference: 'high-performance',
+          }}
+        >
+          <PhotoOrbitSystem config={photoConfig} urls={view.urls} />
+          <ambientLight intensity={0.6} />
+          <pointLight position={[10, 10, 10]} intensity={0.8} />
+          <pointLight position={[-10, -10, -10]} intensity={0.3} />
+        </Canvas>
+      </ExperienceErrorBoundary>
     </div>
   )
 }
