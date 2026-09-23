@@ -33,6 +33,18 @@ export function requireIsolatedE2E(): IsolatedE2EConfig {
     )
   }
 
+  const serviceRole =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.E2E_SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceRole) {
+    throw new Error(
+      'Authenticated E2E requires isolated E2E_SUPABASE_SERVICE_ROLE_KEY (server-only, dedica-flow-e2e). Do not use the production key.',
+    )
+  }
+
+  if (Object.keys(process.env).some((key) => key.startsWith('NEXT_PUBLIC_') && key.includes('SERVICE'))) {
+    throw new Error('Authenticated E2E refuses NEXT_PUBLIC_ server credentials.')
+  }
+
   if (FORBIDDEN_PROJECT_SLUGS.has(projectSlug)) {
     throw new Error(
       'Authenticated E2E refuses known production project slugs. Use a dedicated test project.',

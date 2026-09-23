@@ -36,6 +36,15 @@ const suite =
 
 if (suite === 'authenticated') {
   loadEnvFile('.env.e2e', true)
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.E2E_SUPABASE_SERVICE_ROLE_KEY) {
+    process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY
+  }
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.E2E_SUPABASE_URL) {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.E2E_SUPABASE_URL
+  }
+  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && process.env.E2E_SUPABASE_ANON_KEY) {
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.E2E_SUPABASE_ANON_KEY
+  }
   requireIsolatedE2E()
 } else {
   loadEnvFile('.env.local')
