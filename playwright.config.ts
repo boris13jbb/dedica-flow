@@ -6,8 +6,8 @@ import { requireIsolatedE2E } from './tests/e2e/helpers/isolated-env'
 const PORT = 3100
 const BASE_URL = `http://127.0.0.1:${PORT}`
 
-function loadLocalEnv() {
-  const envPath = resolve(process.cwd(), '.env.local')
+function loadEnvFile(filename: string, overwrite = false) {
+  const envPath = resolve(process.cwd(), filename)
   if (!existsSync(envPath)) return
 
   for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
@@ -17,17 +17,16 @@ function loadLocalEnv() {
     if (eq < 1) continue
     const key = trimmed.slice(0, eq).trim()
     const value = trimmed.slice(eq + 1).trim().replace(/^['"]|['"]$/g, '')
-    if (process.env[key] === undefined) {
+    if (overwrite || process.env[key] === undefined) {
       process.env[key] = value
     }
   }
 }
 
-loadLocalEnv()
-
 /**
  * Por defecto solo corre smoke (sin auth destructiva).
  * Suite autenticada: npm run test:e2e:authenticated
+ * Nunca hidrata .env.local (producción) en la suite autenticada.
  */
 const suite =
   process.env.E2E_SUITE === 'authenticated' ||
@@ -36,7 +35,10 @@ const suite =
     : 'smoke'
 
 if (suite === 'authenticated') {
+  loadEnvFile('.env.e2e', true)
   requireIsolatedE2E()
+} else {
+  loadEnvFile('.env.local')
 }
 
 const smokeProjects = [

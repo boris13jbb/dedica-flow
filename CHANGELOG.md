@@ -16,6 +16,7 @@ y este proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 - Reordenamiento de escenas con dnd-kit (feedback, teclado y persistencia inmediata).
 - Photo Orbit prioriza “Seleccionar fotos de Biblioteca”; las URLs externas quedan como opción secundaria.
 - E2E de CI limitado a smoke. La suite autenticada del Scene Builder exige entorno aislado (`npm run test:e2e:authenticated`) y no cuenta skips como cobertura ejecutada.
+- La suite autenticada carga `.env.e2e` y rechaza el host Supabase de producción y el slug `mayrita`.
 
 ### Por Agregar
 - Sistema de notificaciones en tiempo real

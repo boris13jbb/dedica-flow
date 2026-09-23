@@ -50,6 +50,10 @@ Los tests del Builder crean, reordenan y borran escenas, y pueden subir media. D
 Mensaje oficial: `Authenticated E2E requires isolated test environment`.
 No contar tests skipped como E2E ejecutados.
 
+El backend aislado se llama `dedica-flow-e2e` (proyecto Supabase distinto de producción).
+Localmente la suite autenticada lee `.env.e2e` (gitignorado), nunca `.env.local`.
+La service role solo vive en GitHub Secrets / `.env.e2e` y en `src/lib/supabase/admin.ts` (servidor). Nunca `NEXT_PUBLIC_`.
+
 ## 📁 Estructura de Tests
 
 ```

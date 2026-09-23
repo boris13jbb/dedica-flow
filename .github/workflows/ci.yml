@@ -152,6 +152,31 @@ jobs:
     if: github.event_name == 'pull_request' && vars.E2E_ISOLATED == 'true'
 
     steps:
+      - name: Require isolated E2E secrets
+        env:
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          E2E_PROJECT_ID: ${{ secrets.E2E_PROJECT_ID }}
+          E2E_PROJECT_SLUG: ${{ secrets.E2E_PROJECT_SLUG }}
+          E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+          E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          missing=0
+          for name in E2E_EMAIL E2E_PASSWORD E2E_PROJECT_ID E2E_PROJECT_SLUG E2E_SUPABASE_URL E2E_SUPABASE_ANON_KEY E2E_SUPABASE_SERVICE_ROLE_KEY; do
+            eval "value=\${$name}"
+            if [ -z "$value" ]; then
+              echo "MISSING $name"
+              missing=1
+            else
+              echo "PRESENT $name"
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Authenticated E2E requires isolated test environment secrets"
+            exit 1
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v4
 

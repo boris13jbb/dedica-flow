@@ -4,6 +4,7 @@
  */
 
 const FORBIDDEN_PROJECT_SLUGS = new Set(['mayrita'])
+const FORBIDDEN_SUPABASE_HOSTS = new Set(['cyfwvhqexazlmcifyskb.supabase.co'])
 
 export type IsolatedE2EConfig = {
   email: string
@@ -36,6 +37,23 @@ export function requireIsolatedE2E(): IsolatedE2EConfig {
     throw new Error(
       'Authenticated E2E refuses known production project slugs. Use a dedicated test project.',
     )
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+  if (supabaseUrl) {
+    try {
+      const host = new URL(supabaseUrl).hostname.toLowerCase()
+      if (FORBIDDEN_SUPABASE_HOSTS.has(host)) {
+        throw new Error(
+          'Authenticated E2E refuses the production Supabase host. Point NEXT_PUBLIC_SUPABASE_URL at the isolated E2E project.',
+        )
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('refuses the production')) {
+        throw error
+      }
+      throw new Error('Authenticated E2E requires a valid isolated NEXT_PUBLIC_SUPABASE_URL.')
+    }
   }
 
   return {
