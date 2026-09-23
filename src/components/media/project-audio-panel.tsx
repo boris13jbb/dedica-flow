@@ -13,10 +13,11 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/icon-button'
+import { ConfirmDialog } from '@/components/ui/dialog'
 import { MediaLibrary } from '@/components/media'
 import { updateProjectAudioConfig } from '@/app/admin/projects/[id]/media/actions'
 import { mediaConfig } from '@/config'
-import { formatFileSize } from '@/lib/format'
+import { formatDuration, formatFileSize } from '@/lib/format'
 import type { AudioConfig } from '@/types'
 
 interface Asset {
@@ -49,6 +50,7 @@ export function ProjectAudioPanel({
   onRefresh,
 }: ProjectAudioPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const [pending, startTransition] = useTransition()
   const [uploading, setUploading] = useState(false)
   const [assetId, setAssetId] = useState<string | undefined>(
@@ -60,6 +62,9 @@ export function ProjectAudioPanel({
   const [fadeOut, setFadeOut] = useState(initialAudio?.fadeOut ?? 2000)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [duration, setDuration] = useState<number | null>(null)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [removeOpen, setRemoveOpen] = useState(false)
 
   const selected = useMemo(
     () => assets.find((a) => a.id === assetId && a.type === 'audio') ?? null,
@@ -155,22 +160,22 @@ export function ProjectAudioPanel({
     <section
       id="audio-experiencia"
       aria-labelledby="audio-experiencia-title"
-      className="overflow-hidden rounded-[var(--radius-xl)] border border-df-primary/35 bg-gradient-to-b from-df-primary/[0.08] to-df-card"
+      className="df-panel overflow-hidden"
     >
-      <div className="border-b border-df-primary/20 px-5 py-5 sm:px-6">
+      <div className="border-b border-df-border px-5 py-5 sm:px-6">
         <div className="flex flex-wrap items-start gap-3">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-df-primary text-df-primary-fg shadow-[var(--shadow-glow)]">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-df-primary/40 bg-df-primary/10 text-df-primary">
             <Music className="size-6" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-df-primary-light">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-df-muted-fg">
               Audio de la experiencia
             </p>
             <h2
               id="audio-experiencia-title"
               className="text-xl font-semibold text-df-fg sm:text-2xl"
             >
-              Sube la música de fondo
+              Música de la dedicación
             </h2>
             <p className="mt-1.5 text-sm text-df-muted">
               Este archivo sonará cuando alguien abra el enlace público. Es el
@@ -179,34 +184,35 @@ export function ProjectAudioPanel({
           </div>
           {selected ? (
             <Badge variant="success" dot>
-              Audio activo
+              Asignado
             </Badge>
           ) : (
             <Badge variant="warning" dot>
-              Sin audio
+              Sin asignar
             </Badge>
           )}
         </div>
       </div>
 
       <div className="space-y-6 p-5 sm:p-6">
-        <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={mediaConfig.allowedMimeTypes.audio.join(',')}
-            className="hidden"
-            disabled={uploading || pending}
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) void handleUpload(file)
-            }}
-          />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={mediaConfig.allowedMimeTypes.audio.join(',')}
+          className="hidden"
+          disabled={uploading || pending}
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) void handleUpload(file)
+          }}
+        />
+
+        {!selected && (
           <button
             type="button"
             disabled={uploading || pending}
             onClick={() => fileInputRef.current?.click()}
-            className="flex min-h-[160px] w-full flex-col items-center justify-center gap-3 rounded-[var(--radius-xl)] border-2 border-dashed border-df-primary/45 bg-df-bg/70 px-6 py-10 text-center transition-colors hover:border-df-primary hover:bg-df-bg disabled:opacity-60"
+            className="df-upload-zone flex min-h-[140px] w-full flex-col items-center justify-center gap-3 px-6 py-10 text-center disabled:opacity-60"
           >
             {uploading ? (
               <Spinner className="size-8" label="Subiendo audio" />
@@ -222,34 +228,64 @@ export function ProjectAudioPanel({
               </p>
             </div>
           </button>
-        </div>
+        )}
 
         {selected && (
           <div className="rounded-[var(--radius-lg)] border border-df-border bg-df-surface p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <div>
+            <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
                 <p className="text-xs text-df-muted-fg">Archivo asignado</p>
-                <p className="font-medium text-df-fg">{selected.original_name}</p>
+                <p className="truncate font-medium text-df-fg">{selected.original_name}</p>
+                <p className="mt-1 text-xs text-df-muted">
+                  {formatDuration(duration)} · {formatFileSize(selected.size_bytes)}
+                </p>
               </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={pending}
-                onClick={() => {
-                  setAssetId(undefined)
-                  save({ assetId: null })
-                }}
-              >
-                Quitar audio
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  disabled={pending || uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Reemplazar
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  disabled={pending}
+                  onClick={() => setRemoveOpen(true)}
+                >
+                  Quitar
+                </Button>
+              </div>
             </div>
             <audio
+              ref={audioRef}
               controls
               className="w-full"
               src={selected.url}
               preload="metadata"
+              onLoadedMetadata={(event) => {
+                setDuration(event.currentTarget.duration)
+                setCurrentTime(event.currentTarget.currentTime)
+              }}
+              onTimeUpdate={(event) => {
+                setCurrentTime(event.currentTarget.currentTime)
+              }}
             />
+            <div className="df-progress mt-3" aria-hidden>
+              <div
+                className="df-progress-bar"
+                style={{
+                  width:
+                    duration && duration > 0
+                      ? `${Math.min(100, (currentTime / duration) * 100)}%`
+                      : '0%',
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -359,6 +395,22 @@ export function ProjectAudioPanel({
           />
         </div>
       </div>
+
+      <ConfirmDialog
+        open={removeOpen}
+        onOpenChange={setRemoveOpen}
+        title="Quitar audio de la experiencia"
+        description="La música dejará de sonar en el enlace público. El archivo permanecerá en la biblioteca."
+        confirmLabel="Quitar audio"
+        variant="destructive"
+        loading={pending}
+        onConfirm={async () => {
+          setAssetId(undefined)
+          setDuration(null)
+          setCurrentTime(0)
+          save({ assetId: null })
+        }}
+      />
     </section>
   )
 }

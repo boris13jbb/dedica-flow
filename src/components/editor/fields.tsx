@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import type { EditorFieldDefinition } from '@/components/experience/registry'
 
 interface TextFieldProps {
@@ -28,9 +30,7 @@ export function TextField({ field, value, onChange }: TextFieldProps) {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={field.key} className="text-zinc-200">
-        {field.label}
-      </Label>
+      <Label htmlFor={field.key}>{field.label}</Label>
       <Input
         id={field.key}
         type="text"
@@ -42,10 +42,9 @@ export function TextField({ field, value, onChange }: TextFieldProps) {
         }}
         placeholder={field.placeholder}
         autoComplete="off"
-        className="bg-zinc-800 border-zinc-700 text-zinc-50 placeholder:text-zinc-500"
       />
       {field.description && (
-        <p className="text-xs text-zinc-500">{field.description}</p>
+        <p className="text-xs text-df-muted-fg">{field.description}</p>
       )}
     </div>
   )
@@ -69,10 +68,8 @@ export function TextAreaField({ field, value, onChange }: TextAreaFieldProps) {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={field.key} className="text-zinc-200">
-        {field.label}
-      </Label>
-      <textarea
+      <Label htmlFor={field.key}>{field.label}</Label>
+      <Textarea
         id={field.key}
         value={local}
         onChange={(e) => {
@@ -83,10 +80,9 @@ export function TextAreaField({ field, value, onChange }: TextAreaFieldProps) {
         placeholder={field.placeholder}
         rows={4}
         autoComplete="off"
-        className="flex w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       />
       {field.description && (
-        <p className="text-xs text-zinc-500">{field.description}</p>
+        <p className="text-xs text-df-muted-fg">{field.description}</p>
       )}
     </div>
   )
@@ -101,9 +97,7 @@ interface NumberFieldProps {
 export function NumberField({ field, value, onChange }: NumberFieldProps) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={field.key} className="text-zinc-200">
-        {field.label}
-      </Label>
+      <Label htmlFor={field.key}>{field.label}</Label>
       <Input
         id={field.key}
         type="number"
@@ -112,10 +106,9 @@ export function NumberField({ field, value, onChange }: NumberFieldProps) {
         min={field.min}
         max={field.max}
         step={field.step}
-        className="bg-zinc-800 border-zinc-700 text-zinc-50"
       />
       {field.description && (
-        <p className="text-xs text-zinc-500">{field.description}</p>
+        <p className="text-xs text-df-muted-fg">{field.description}</p>
       )}
     </div>
   )
@@ -131,10 +124,8 @@ export function RangeField({ field, value, onChange }: RangeFieldProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label htmlFor={field.key} className="text-zinc-200">
-          {field.label}
-        </Label>
-        <span className="text-sm text-zinc-400">{value}</span>
+        <Label htmlFor={field.key}>{field.label}</Label>
+        <span className="text-sm text-df-muted">{value}</span>
       </div>
       <input
         id={field.key}
@@ -144,10 +135,10 @@ export function RangeField({ field, value, onChange }: RangeFieldProps) {
         min={field.min}
         max={field.max}
         step={field.step}
-        className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-zinc-50"
+        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-df-border accent-[var(--gold)]"
       />
       {field.description && (
-        <p className="text-xs text-zinc-500">{field.description}</p>
+        <p className="text-xs text-df-muted-fg">{field.description}</p>
       )}
     </div>
   )
@@ -164,26 +155,24 @@ export function ColorField({ field, value, onChange }: ColorFieldProps) {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={field.key} className="text-zinc-200">
-        {field.label}
-      </Label>
+      <Label htmlFor={field.key}>{field.label}</Label>
       <div className="flex items-center gap-2">
         <input
           id={field.key}
           type="color"
           value={color}
           onChange={(e) => onChange(e.target.value)}
-          className="h-10 w-20 rounded border border-zinc-700 bg-zinc-800 cursor-pointer"
+          className="h-10 w-20 cursor-pointer rounded-[var(--radius-md)] border border-df-border bg-df-surface"
         />
         <Input
           type="text"
           value={color}
           onChange={(e) => onChange(e.target.value)}
-          className="bg-zinc-800 border-zinc-700 text-zinc-50 font-mono text-sm"
+          className="font-mono text-sm"
         />
       </div>
       {field.description && (
-        <p className="text-xs text-zinc-500">{field.description}</p>
+        <p className="text-xs text-df-muted-fg">{field.description}</p>
       )}
     </div>
   )
@@ -199,29 +188,17 @@ export function ToggleField({ field, value, onChange }: ToggleFieldProps) {
   return (
     <div className="flex items-center justify-between py-2">
       <div className="space-y-0.5">
-        <Label htmlFor={field.key} className="text-zinc-200">
-          {field.label}
-        </Label>
+        <Label htmlFor={field.key}>{field.label}</Label>
         {field.description && (
-          <p className="text-xs text-zinc-500">{field.description}</p>
+          <p className="text-xs text-df-muted-fg">{field.description}</p>
         )}
       </div>
-      <button
+      <Switch
         id={field.key}
-        type="button"
-        role="switch"
-        aria-checked={value}
-        onClick={() => onChange(!value)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          value ? 'bg-zinc-50' : 'bg-zinc-700'
-        }`}
-      >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-zinc-900 transition-transform ${
-            value ? 'translate-x-6' : 'translate-x-1'
-          }`}
-        />
-      </button>
+        checked={value}
+        onCheckedChange={onChange}
+        label={field.label}
+      />
     </div>
   )
 }
@@ -235,14 +212,12 @@ interface SelectFieldProps {
 export function SelectField({ field, value, onChange }: SelectFieldProps) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={field.key} className="text-zinc-200">
-        {field.label}
-      </Label>
+      <Label htmlFor={field.key}>{field.label}</Label>
       <select
         id={field.key}
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
-        className="flex h-10 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-600 focus-visible:ring-offset-2"
+        className="flex h-10 w-full rounded-[var(--radius-md)] border border-df-border bg-df-surface px-3 py-2 text-sm text-df-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-df-primary"
       >
         {field.options?.map((option) => (
           <option key={option.value} value={option.value}>
@@ -251,7 +226,7 @@ export function SelectField({ field, value, onChange }: SelectFieldProps) {
         ))}
       </select>
       {field.description && (
-        <p className="text-xs text-zinc-500">{field.description}</p>
+        <p className="text-xs text-df-muted-fg">{field.description}</p>
       )}
     </div>
   )

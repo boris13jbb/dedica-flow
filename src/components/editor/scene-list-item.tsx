@@ -2,9 +2,11 @@
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Eye, EyeOff, Copy, Trash2 } from 'lucide-react'
+import { GripVertical, Eye, EyeOff, Copy, Trash2, SlidersHorizontal } from 'lucide-react'
 import type { Scene } from '@/types'
 import { getSceneDefinition } from '@/components/experience/registry'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 interface SceneListItemProps {
   scene: Scene
@@ -38,84 +40,88 @@ export function SceneListItem({
   }
 
   const definition = getSceneDefinition(scene.scene_type as never)
+  const order = scene.position + 1
 
   return (
-    <div
+    <li
       ref={setNodeRef}
       style={style}
-      className={`group relative flex items-center gap-2 rounded-[var(--radius-lg)] border p-3 transition-colors ${
-        isDragging
-          ? 'opacity-50 ring-1 ring-df-primary/40'
-          : ''
-      } ${
+      className={cn(
+        'group relative z-[1] flex items-start gap-2 rounded-[var(--radius-lg)] border bg-df-surface p-3 transition-colors',
+        isDragging && 'opacity-50',
         isSelected
-          ? 'border-df-primary/50 bg-df-primary/10 shadow-[0_0_0_1px_rgba(245,158,11,0.12)]'
-          : 'border-df-border bg-df-surface/50 hover:border-df-border-hover hover:bg-df-card'
-      } ${
-        !scene.enabled
-          ? 'opacity-60'
-          : ''
-      }`}
+          ? 'border-df-primary/50 bg-df-primary/8 df-gold-ring'
+          : 'border-df-border hover:border-df-border-hover hover:bg-df-card',
+        !scene.enabled && 'opacity-60'
+      )}
     >
       <button
         type="button"
-        className="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300"
+        className="mt-1 cursor-grab text-df-muted-fg hover:text-df-muted active:cursor-grabbing"
+        aria-label="Reordenar escena"
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="w-4 h-4" />
+        <GripVertical className="size-4" />
       </button>
 
-      <button
-        type="button"
-        onClick={onSelect}
-        className="flex-1 text-left"
+      <span
+        aria-hidden
+        className={cn(
+          'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold',
+          isSelected
+            ? 'bg-df-primary text-df-primary-fg'
+            : 'bg-df-card text-df-muted ring-1 ring-df-border'
+        )}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-zinc-50">
-            {scene.name}
-          </span>
-          <span className="text-xs text-zinc-500">
-            {definition?.name || scene.scene_type}
-          </span>
+        {order}
+      </span>
+
+      <button type="button" onClick={onSelect} className="min-w-0 flex-1 text-left">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="truncate text-sm font-medium text-df-fg">{scene.name}</span>
+          <Badge variant={scene.enabled ? 'success' : 'default'} className="shrink-0">
+            {scene.enabled ? 'Activa' : 'Pausada'}
+          </Badge>
         </div>
-        <div className="text-xs text-zinc-500 mt-0.5">
-          Posición {scene.position + 1}
-        </div>
+        <p className="mt-1 text-xs text-df-muted-fg">
+          {definition?.name || scene.scene_type} · orden {order}
+        </p>
+        <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-df-primary-light">
+          <SlidersHorizontal className="size-3" />
+          Configurar
+        </span>
       </button>
 
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
         <button
           type="button"
           onClick={onToggleEnabled}
-          className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200"
+          className="rounded-[var(--radius-sm)] p-1.5 text-df-muted hover:bg-df-card hover:text-df-fg"
           title={scene.enabled ? 'Deshabilitar' : 'Habilitar'}
+          aria-label={scene.enabled ? 'Deshabilitar escena' : 'Habilitar escena'}
         >
-          {scene.enabled ? (
-            <Eye className="w-4 h-4" />
-          ) : (
-            <EyeOff className="w-4 h-4" />
-          )}
+          {scene.enabled ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
         </button>
-
         <button
           type="button"
           onClick={onDuplicate}
-          className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200"
+          className="rounded-[var(--radius-sm)] p-1.5 text-df-muted hover:bg-df-card hover:text-df-fg"
           title="Duplicar"
+          aria-label="Duplicar escena"
         >
-          <Copy className="w-4 h-4" />
+          <Copy className="size-4" />
         </button>
-
         <button
           type="button"
           onClick={onDelete}
-          className="p-1 rounded hover:bg-red-900/50 text-zinc-400 hover:text-red-400"
+          className="rounded-[var(--radius-sm)] p-1.5 text-df-muted hover:bg-df-error/15 hover:text-df-error"
           title="Eliminar"
+          aria-label="Eliminar escena"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="size-4" />
         </button>
       </div>
-    </div>
+    </li>
   )
 }

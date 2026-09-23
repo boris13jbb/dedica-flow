@@ -171,7 +171,7 @@ export function MediaLibrary({
     <div className="space-y-4">
       {showTabs && filterType === 'all' && (
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-          <TabsList className="w-full justify-start overflow-x-auto sm:w-auto">
+          <TabsList className="flex h-auto w-full flex-wrap justify-start sm:w-auto">
             <TabsTrigger value="all">Todos</TabsTrigger>
             <TabsTrigger value="image">Imágenes</TabsTrigger>
             <TabsTrigger value="video">Videos</TabsTrigger>
@@ -180,7 +180,7 @@ export function MediaLibrary({
         </Tabs>
       )}
 
-      <div className="rounded-[var(--radius-xl)] border-2 border-dashed border-df-border p-6 text-center transition-colors hover:border-df-border-hover sm:p-8">
+      <div className="df-upload-zone p-6 text-center sm:p-8">
         <input
           type="file"
           id={uploadId}
@@ -217,20 +217,20 @@ export function MediaLibrary({
           className="py-10"
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredAssets.map((asset) => (
             <Card
               key={asset.id}
-              className="group relative overflow-hidden transition-colors hover:border-df-border-hover"
+              className="group relative overflow-hidden bg-df-surface shadow-none transition-colors hover:border-df-border-hover"
             >
-              <div className="relative flex aspect-video items-center justify-center bg-df-bg">
+              <div className="relative flex aspect-[4/3] items-center justify-center bg-df-bg">
                 {asset.type === 'image' ? (
                   <Image
                     src={asset.url}
                     alt={asset.original_name}
                     fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 ) : (
                   <div className="text-df-muted-fg">{getIcon(asset.type)}</div>
@@ -238,7 +238,7 @@ export function MediaLibrary({
               </div>
 
               <div className="p-3">
-                <p className="truncate text-xs font-medium text-df-fg">
+                <p className="truncate text-sm font-medium text-df-fg">
                   {asset.original_name}
                 </p>
                 <p className="mt-1 text-xs text-df-muted-fg">
@@ -261,10 +261,10 @@ export function MediaLibrary({
                 <Button
                   type="button"
                   size="icon-sm"
-                  variant="destructive"
+                  variant="ghost"
                   onClick={() => setDeleteId(asset.id)}
                   aria-label="Eliminar archivo"
-                  className="h-7 w-7"
+                  className="h-7 w-7 text-df-muted hover:text-df-error"
                 >
                   <Trash2 className="size-3" />
                 </Button>

@@ -228,7 +228,7 @@ export function PublishPanel({
         </div>
       )}
 
-      <Card className="p-5 sm:p-6">
+      <Card className="df-panel-elevated p-5 shadow-none sm:p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">
             <div className="rounded-[var(--radius-lg)] bg-df-surface p-3 ring-1 ring-df-border">
@@ -271,7 +271,7 @@ export function PublishPanel({
                       href={publicUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-8 items-center gap-1 rounded-[var(--radius-md)] px-2 text-xs text-df-info hover:underline"
+                      className="inline-flex h-8 items-center gap-1 rounded-full border border-df-border bg-df-surface px-3 text-xs font-medium text-df-muted hover:border-df-border-hover hover:text-df-fg"
                     >
                       Abrir
                       <ExternalLink className="size-3" />
@@ -318,47 +318,28 @@ export function PublishPanel({
                 </Button>
               </div>
             ) : (
-              <>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setErrorMessage(null)
-                    setSuccessMessage(null)
-                    setPendingAction('publish')
-                  }}
-                  disabled={loading || !canPublish}
-                  className="min-h-11 sm:min-h-10"
-                >
-                  {isPublished ? (
-                    <>
-                      <RefreshCw className="size-4" />
-                      Actualizar publicación
-                    </>
-                  ) : (
-                    <>
-                      <Globe className="size-4" />
-                      Publicar
-                    </>
-                  )}
-                </Button>
-
-                {isPublished && (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => {
-                      setErrorMessage(null)
-                      setSuccessMessage(null)
-                      setUnpublishOpen(true)
-                    }}
-                    disabled={loading}
-                    className="min-h-11 sm:min-h-10"
-                  >
-                    <GlobeX className="size-4" />
-                    Despublicar
-                  </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setErrorMessage(null)
+                  setSuccessMessage(null)
+                  setPendingAction('publish')
+                }}
+                disabled={loading || !canPublish}
+                className="min-h-11 sm:min-h-10"
+              >
+                {isPublished ? (
+                  <>
+                    <RefreshCw className="size-4" />
+                    Actualizar
+                  </>
+                ) : (
+                  <>
+                    <Globe className="size-4" />
+                    Publicar
+                  </>
                 )}
-              </>
+              </Button>
             )}
           </div>
         </div>
@@ -426,6 +407,25 @@ export function PublishPanel({
             </div>
           )}
         </section>
+      )}
+
+      {isPublished && (
+        <div className="flex justify-end border-t border-df-border pt-4">
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={() => {
+              setErrorMessage(null)
+              setSuccessMessage(null)
+              setUnpublishOpen(true)
+            }}
+            disabled={loading}
+          >
+            <GlobeX className="size-4" />
+            Despublicar
+          </Button>
+        </div>
       )}
 
       <ConfirmDialog

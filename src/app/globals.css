@@ -24,9 +24,15 @@
   --primary-hover: #f0d57a;
   --primary-foreground: #0a0804;
 
+  --gold: var(--primary);
+  --gold-hover: var(--primary-hover);
+  --text-primary: var(--foreground);
+  --text-muted: var(--muted-foreground);
+  --destructive: #ef4444;
+
   --success: #22c55e;
   --warning: #f59e0b;
-  --error: #ef4444;
+  --error: var(--destructive);
   --info: #3b82f6;
 
   --radius-sm: 8px;
@@ -58,10 +64,13 @@
   --color-df-fg: var(--foreground);
   --color-df-muted: var(--muted-foreground);
   --color-df-muted-fg: var(--subtle-foreground);
+  --color-df-gold: var(--gold);
+  --color-df-gold-hover: var(--gold-hover);
   --color-df-primary: var(--primary);
   --color-df-primary-light: var(--primary-light);
   --color-df-primary-hover: var(--primary-hover);
   --color-df-primary-fg: var(--primary-foreground);
+  --color-df-destructive: var(--destructive);
   --color-df-success: var(--success);
   --color-df-warning: var(--warning);
   --color-df-error: var(--error);
@@ -261,4 +270,48 @@ body {
 
 .animate-df-slide-up {
   animation: df-slide-up var(--duration-normal) var(--ease-out);
+}
+
+/* Shared cinematic chrome — prefer these over per-screen hex */
+.df-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.df-panel-elevated {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-elevated);
+}
+
+.df-gold-ring {
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.28);
+}
+
+.df-upload-zone {
+  border: 1px dashed var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  transition: border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.df-upload-zone:hover {
+  border-color: var(--gold);
+  background: var(--surface-elevated);
+}
+
+.df-progress {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.df-progress-bar {
+  height: 100%;
+  background: var(--gold);
+  transition: width 80ms linear;
 }

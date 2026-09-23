@@ -69,7 +69,7 @@ export function ProjectWorkspaceNav({
               className={cn(
                 'inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] px-3 py-2 text-xs font-medium transition-colors',
                 active
-                  ? 'bg-df-card text-df-fg shadow-sm'
+                  ? 'bg-df-primary/12 text-df-primary-light'
                   : 'text-df-muted hover:text-df-fg'
               )}
             >

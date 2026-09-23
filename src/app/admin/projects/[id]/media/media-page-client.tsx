@@ -44,15 +44,15 @@ export function MediaPageClient({
 
       <section
         aria-labelledby="biblioteca-title"
-        className="overflow-hidden rounded-[var(--radius-xl)] border border-df-border bg-df-card"
+        className="df-panel overflow-hidden"
       >
         <div className="border-b border-df-border px-5 py-4 sm:px-6">
           <div className="flex flex-wrap items-start gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-df-info/15 text-df-info">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-df-border bg-df-surface text-df-primary">
               <ImageIcon className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium uppercase tracking-wider text-df-info/80">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-df-muted-fg">
                 Biblioteca de medios
               </p>
               <h2 id="biblioteca-title" className="text-xl font-semibold text-df-fg">

@@ -343,9 +343,9 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
 
       {/* Desktop / tablet grande: 3 columnas */}
       <div className="hidden min-h-0 flex-1 overflow-hidden lg:flex">
-        <aside className="flex w-[280px] shrink-0 flex-col border-r border-df-border bg-df-bg-secondary xl:w-[290px]">
+        <aside className="flex w-[280px] shrink-0 flex-col border-r border-df-border bg-df-surface xl:w-[290px]">
           <div className="border-b border-df-border px-4 py-3">
-            <p className="text-xs font-medium uppercase tracking-wider text-df-muted-fg">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-df-muted-fg">
               Escenas
             </p>
             <p className="text-sm text-df-muted">Ordena y activa cada momento</p>
@@ -374,7 +374,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
           />
         </div>
 
-        <aside className="flex w-[320px] shrink-0 flex-col border-l border-df-border bg-df-bg-secondary xl:w-[340px]">
+        <aside className="flex w-[320px] shrink-0 flex-col border-l border-df-border bg-df-surface xl:w-[340px]">
           <div className="border-b border-df-border px-4 py-3">
             <p className="text-xs font-medium uppercase tracking-wider text-df-muted-fg">
               Propiedades
@@ -393,7 +393,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
         <div className="min-h-0 flex-1 overflow-hidden">
           {mobilePane === 'scenes' && (
-            <div className="flex h-full flex-col bg-df-bg-secondary">
+            <div className="flex h-full flex-col bg-df-surface">
               <div className="border-b border-df-border px-4 py-3">
                 <p className="text-sm font-medium text-df-fg">Escenas</p>
                 <p className="text-xs text-df-muted">Toca una escena para editarla</p>
@@ -424,7 +424,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
             </div>
           )}
           {mobilePane === 'props' && (
-            <div className="flex h-full flex-col bg-df-bg-secondary">
+            <div className="flex h-full flex-col bg-df-surface">
               <div className="border-b border-df-border px-4 py-3">
                 <p className="text-sm font-medium text-df-fg">Ajustes</p>
                 <p className="text-xs text-df-muted">
@@ -440,7 +440,7 @@ export function EditorClient({ project, initialScenes }: EditorClientProps) {
 
         <nav
           aria-label="Vistas del editor"
-          className="flex shrink-0 border-t border-df-border bg-df-bg-secondary pb-[env(safe-area-inset-bottom)]"
+          className="flex shrink-0 border-t border-df-border bg-df-surface pb-[env(safe-area-inset-bottom)]"
         >
           {(
             [
