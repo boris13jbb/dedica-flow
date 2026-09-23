@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   ArrowUpRight,
+  Copy,
   MoreHorizontal,
   Music,
   Pencil,
@@ -26,6 +27,7 @@ import {
 import { cn } from '@/lib/utils'
 import { formatRelativeDate } from '@/lib/format'
 import type { ProjectStatus } from '@/types'
+import { DuplicateProjectDialog } from './duplicate-project-dialog'
 
 export type DashboardProject = {
   id: string
@@ -75,7 +77,13 @@ function CompactStat({
   )
 }
 
-function ProjectRowActions({ project }: { project: DashboardProject }) {
+function ProjectRowActions({
+  project,
+  onDuplicate,
+}: {
+  project: DashboardProject
+  onDuplicate: (project: DashboardProject) => void
+}) {
   const router = useRouter()
 
   return (
@@ -134,6 +142,13 @@ function ProjectRowActions({ project }: { project: DashboardProject }) {
             <Rocket className="size-3.5" />
             Publicar
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onDuplicate(project)}
+            data-testid={`duplicate-project-${project.id}`}
+          >
+            <Copy className="size-3.5" />
+            Duplicar
+          </DropdownMenuItem>
           {project.status === 'published' && (
             <>
               <DropdownMenuSeparator />
@@ -171,6 +186,13 @@ function ProjectRowActions({ project }: { project: DashboardProject }) {
           >
             <Rocket className="size-3.5" />
             Publicar
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onDuplicate(project)}
+            data-testid={`duplicate-project-mobile-${project.id}`}
+          >
+            <Copy className="size-3.5" />
+            Duplicar
           </DropdownMenuItem>
           {project.status === 'published' && (
             <DropdownMenuItem
@@ -211,6 +233,7 @@ export function ProjectDashboard({
 }: ProjectDashboardProps) {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterKey>('all')
+  const [duplicating, setDuplicating] = useState<DashboardProject | null>(null)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -328,7 +351,7 @@ export function ProjectDashboard({
                     </p>
                   </div>
 
-                  <ProjectRowActions project={project} />
+                  <ProjectRowActions project={project} onDuplicate={setDuplicating} />
                 </div>
               </li>
             ))}
@@ -350,6 +373,14 @@ export function ProjectDashboard({
       >
         <Plus className="size-6" />
       </Link>
+
+      <DuplicateProjectDialog
+        project={duplicating}
+        open={Boolean(duplicating)}
+        onOpenChange={(open) => {
+          if (!open) setDuplicating(null)
+        }}
+      />
     </div>
   )
 }
