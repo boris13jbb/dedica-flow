@@ -173,11 +173,11 @@ export function PublishPanel({
   return (
     <div className="space-y-6">
       {!canPublish && (
-        <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-df-warning/30 bg-df-warning/10 p-4 text-sm text-amber-100">
+        <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-df-warning/30 bg-df-warning/10 p-4 text-sm text-df-fg">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <div>
             <p className="font-medium">No hay escenas activas</p>
-            <p className="mt-1 text-amber-100/80">
+            <p className="mt-1 text-df-muted">
               Activa al menos una escena en el editor antes de publicar.
             </p>
           </div>

@@ -315,3 +315,11 @@ body {
   background: var(--gold);
   transition: width 80ms linear;
 }
+
+/* Native audio sits inside cinematic panels without a white SaaS chrome */
+audio {
+  width: 100%;
+  height: 40px;
+  color-scheme: dark;
+  accent-color: var(--gold);
+}

@@ -191,8 +191,8 @@ function ProjectRowActions({ project }: { project: DashboardProject }) {
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            buttonVariants({ variant: 'success', size: 'sm' }),
-            'hidden sm:inline-flex lg:hidden'
+            buttonVariants({ variant: 'ghost', size: 'sm' }),
+            'hidden sm:inline-flex'
           )}
         >
           Ver
@@ -235,16 +235,7 @@ export function ProjectDashboard({
       </section>
 
       <section className="overflow-hidden rounded-[var(--radius-xl)] border border-df-border bg-df-card/80">
-        <div className="flex flex-col gap-4 border-b border-df-border px-5 py-5 sm:px-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-df-fg">Tus experiencias</h2>
-              <p className="mt-1 text-sm text-df-muted">
-                Crea, gestiona y publica experiencias audiovisuales.
-              </p>
-            </div>
-          </div>
-
+        <div className="flex flex-col gap-4 border-b border-df-border px-5 py-4 sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-df-muted-fg" />
@@ -273,7 +264,7 @@ export function ProjectDashboard({
                     className={cn(
                       'rounded-[var(--radius-md)] px-2.5 py-1.5 text-xs font-medium transition-colors',
                       active
-                        ? 'bg-df-card text-df-fg shadow-sm'
+                        ? 'bg-df-primary/12 text-df-primary-light'
                         : 'text-df-muted hover:text-df-fg'
                     )}
                   >
@@ -345,20 +336,9 @@ export function ProjectDashboard({
         )}
       </section>
 
-      <section className="rounded-[var(--radius-xl)] border border-dashed border-df-border bg-df-surface/30 p-5 sm:p-6">
-        <h3 className="text-sm font-medium text-df-fg">Flujo recomendado</h3>
-        <ol className="mt-3 grid gap-3 text-sm text-df-muted sm:grid-cols-3">
-          <li className="rounded-[var(--radius-lg)] bg-df-bg/50 p-3 ring-1 ring-df-border">
-            <span className="font-medium text-df-primary">1.</span> Edita las escenas
-          </li>
-          <li className="rounded-[var(--radius-lg)] bg-df-bg/50 p-3 ring-1 ring-df-border">
-            <span className="font-medium text-df-primary">2.</span> Inserta el audio y los medios
-          </li>
-          <li className="rounded-[var(--radius-lg)] bg-df-bg/50 p-3 ring-1 ring-df-border">
-            <span className="font-medium text-df-primary">3.</span> Publica y comparte /p/...
-          </li>
-        </ol>
-      </section>
+      <p className="text-xs text-df-muted-fg">
+        Escenas → Audio → Publicar. Así se construye cada experiencia.
+      </p>
 
       <Link
         href="/admin/projects/new"

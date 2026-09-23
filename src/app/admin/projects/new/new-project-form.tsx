@@ -164,7 +164,7 @@ export function NewProjectForm({
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {templates.length === 0 ? (
-            <p className="col-span-full rounded-[var(--radius-lg)] border border-df-warning/30 bg-df-warning/10 p-4 text-sm text-amber-200">
+            <p className="col-span-full rounded-[var(--radius-lg)] border border-df-warning/30 bg-df-warning/10 p-4 text-sm text-df-fg">
               No hay plantillas disponibles. Contacta al administrador o ejecuta el seed de
               Supabase.
             </p>

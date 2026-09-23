@@ -49,43 +49,47 @@ export function ProjectWorkspaceNav({
 }: ProjectWorkspaceNavProps) {
   const pathname = usePathname()
 
+  const tabsNav = (
+    <nav
+      aria-label="Pasos del proyecto"
+      className={cn(
+        'flex flex-wrap gap-1 rounded-[var(--radius-lg)] border border-df-border bg-df-surface p-1',
+        className
+      )}
+    >
+      {STEPS.map((step) => {
+        const active = pathname.includes(step.match)
+        const Icon = step.icon
+        return (
+          <Link
+            key={step.key}
+            href={step.href(projectId)}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+              'inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] px-3 py-2 text-xs font-medium transition-colors',
+              active
+                ? 'bg-df-primary/12 text-df-primary-light'
+                : 'text-df-muted hover:text-df-fg'
+            )}
+          >
+            <Icon className="size-3.5" />
+            {step.label}
+          </Link>
+        )
+      })}
+    </nav>
+  )
+
   if (variant === 'tabs') {
-    return (
-      <nav
-        aria-label="Pasos del proyecto"
-        className={cn(
-          'flex gap-1 overflow-x-auto rounded-[var(--radius-lg)] border border-df-border bg-df-surface p-1 df-scrollbar',
-          className
-        )}
-      >
-        {STEPS.map((step) => {
-          const active = pathname.includes(step.match)
-          const Icon = step.icon
-          return (
-            <Link
-              key={step.key}
-              href={step.href(projectId)}
-              aria-current={active ? 'page' : undefined}
-              className={cn(
-                'inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] px-3 py-2 text-xs font-medium transition-colors',
-                active
-                  ? 'bg-df-primary/12 text-df-primary-light'
-                  : 'text-df-muted hover:text-df-fg'
-              )}
-            >
-              <Icon className="size-3.5" />
-              {step.label}
-            </Link>
-          )
-        })}
-      </nav>
-    )
+    return tabsNav
   }
 
   return (
+    <>
+    <div className="md:hidden">{tabsNav}</div>
     <nav
       aria-label="Pasos del proyecto"
-      className={cn('grid gap-2 sm:grid-cols-3', className)}
+      className={cn('hidden gap-2 md:grid md:grid-cols-3', className)}
     >
       {STEPS.map((step, index) => {
         const active = pathname.includes(step.match)
@@ -129,5 +133,6 @@ export function ProjectWorkspaceNav({
         )
       })}
     </nav>
+    </>
   )
 }

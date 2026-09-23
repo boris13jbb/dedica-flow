@@ -47,11 +47,11 @@ export function SceneListItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group relative z-[1] flex items-start gap-2 rounded-[var(--radius-lg)] border bg-df-surface p-3 transition-colors',
+        'group relative z-[1] flex items-start gap-2 rounded-[var(--radius-lg)] border bg-transparent p-3 transition-colors',
         isDragging && 'opacity-50',
         isSelected
-          ? 'border-df-primary/50 bg-df-primary/8 df-gold-ring'
-          : 'border-df-border hover:border-df-border-hover hover:bg-df-card',
+          ? 'border-df-primary/40 bg-df-primary/8 df-gold-ring'
+          : 'border-transparent hover:bg-df-surface',
         !scene.enabled && 'opacity-60'
       )}
     >
@@ -87,7 +87,14 @@ export function SceneListItem({
         <p className="mt-1 text-xs text-df-muted-fg">
           {definition?.name || scene.scene_type} · orden {order}
         </p>
-        <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-df-primary-light">
+        <span
+          className={cn(
+            'mt-2 inline-flex items-center gap-1 text-[11px] font-medium',
+            isSelected
+              ? 'text-df-primary-light'
+              : 'text-df-muted-fg sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100'
+          )}
+        >
           <SlidersHorizontal className="size-3" />
           Configurar
         </span>
