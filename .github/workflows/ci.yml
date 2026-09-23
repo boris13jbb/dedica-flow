@@ -101,7 +101,7 @@ jobs:
           retention-days: 7
 
   e2e:
-    name: E2E Tests
+    name: E2E Smoke
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
 
@@ -127,10 +127,14 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
 
-      - name: Run E2E tests
+      - name: Announce smoke scope
+        run: echo "Running smoke E2E only. Authenticated E2E requires isolated test environment."
+
+      - name: Run smoke E2E
         run: npm run test:e2e
         env:
           CI: true
+          E2E_SUITE: smoke
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
 
@@ -139,5 +143,80 @@ jobs:
         if: always()
         with:
           name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  e2e-authenticated:
+    name: E2E Authenticated
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && vars.E2E_ISOLATED == 'true'
+
+    steps:
+      - name: Require isolated E2E secrets
+        env:
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          E2E_PROJECT_ID: ${{ secrets.E2E_PROJECT_ID }}
+          E2E_PROJECT_SLUG: ${{ secrets.E2E_PROJECT_SLUG }}
+          E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+          E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          missing=0
+          for name in E2E_EMAIL E2E_PASSWORD E2E_PROJECT_ID E2E_PROJECT_SLUG E2E_SUPABASE_URL E2E_SUPABASE_ANON_KEY E2E_SUPABASE_SERVICE_ROLE_KEY; do
+            eval "value=\${$name}"
+            if [ -z "$value" ]; then
+              echo "MISSING $name"
+              missing=1
+            else
+              echo "PRESENT $name"
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Authenticated E2E requires isolated test environment secrets"
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build app for authenticated E2E
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+
+      - name: Run authenticated Builder E2E
+        run: npm run test:e2e:authenticated
+        env:
+          CI: true
+          E2E_SUITE: authenticated
+          E2E_ISOLATED: '1'
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          E2E_PROJECT_ID: ${{ secrets.E2E_PROJECT_ID }}
+          E2E_PROJECT_SLUG: ${{ secrets.E2E_PROJECT_SLUG }}
+          E2E_ALLOW_PROJECT_MUTATIONS: ${{ vars.E2E_ALLOW_PROJECT_MUTATIONS }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Upload authenticated results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-authenticated
           path: playwright-report/
           retention-days: 30

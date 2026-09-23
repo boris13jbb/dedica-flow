@@ -1,16 +1,18 @@
 'use client'
 
+import { useState } from 'react'
 import {
   DndContext,
-  closestCenter,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
+  closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core'
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -41,22 +43,36 @@ export function SceneList({
   onDeleteScene,
   onAddScene,
 }: SceneListProps) {
+  const [activeId, setActiveId] = useState<string | null>(null)
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
 
+  const activeScene = scenes.find((scene) => scene.id === activeId) ?? null
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id))
+  }
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
+    setActiveId(null)
 
-    if (over && active.id !== over.id) {
-      const oldIndex = scenes.findIndex((s) => s.id === active.id)
-      const newIndex = scenes.findIndex((s) => s.id === over.id)
-      const reordered = arrayMove(scenes, oldIndex, newIndex)
-      onReorderScenes(reordered.map((s) => s.id))
-    }
+    if (!over || active.id === over.id) return
+
+    const oldIndex = scenes.findIndex((scene) => scene.id === active.id)
+    const newIndex = scenes.findIndex((scene) => scene.id === over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+
+    const ordered = [...scenes]
+    const [moved] = ordered.splice(oldIndex, 1)
+    ordered.splice(newIndex, 0, moved)
+    onReorderScenes(ordered.map((scene) => scene.id))
   }
 
   return (
@@ -67,9 +83,15 @@ export function SceneList({
             ? 'Sin momentos aún'
             : `${scenes.length} momento${scenes.length === 1 ? '' : 's'}`}
         </p>
-        <Button type="button" onClick={onAddScene} size="sm" variant="primary">
+        <Button
+          type="button"
+          onClick={onAddScene}
+          size="sm"
+          variant="primary"
+          data-testid="add-scene-button"
+        >
           <Plus className="size-4" />
-          Añadir
+          Agregar escena
         </Button>
       </div>
 
@@ -78,20 +100,22 @@ export function SceneList({
           <div className="px-2 py-12 text-center text-df-muted">
             <p className="mb-1 text-sm text-df-fg">La historia está en blanco</p>
             <p className="text-xs text-df-muted-fg">
-              Añade el primer momento para comenzar la narrativa.
+              Agrega el primer momento para comenzar la narrativa.
             </p>
           </div>
         ) : (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
+            onDragCancel={() => setActiveId(null)}
           >
             <SortableContext
-              items={scenes.map((s) => s.id)}
+              items={scenes.map((scene) => scene.id)}
               strategy={verticalListSortingStrategy}
             >
-              <ol className="relative space-y-2 pl-1">
+              <ol className="relative space-y-2 pl-1" data-testid="scene-list">
                 <span
                   aria-hidden
                   className="absolute bottom-3 left-[22px] top-3 w-px bg-df-border"
@@ -109,6 +133,21 @@ export function SceneList({
                 ))}
               </ol>
             </SortableContext>
+            <DragOverlay>
+              {activeScene ? (
+                <ul className="list-none">
+                  <SceneListItem
+                    scene={activeScene}
+                    isSelected
+                    isOverlay
+                    onSelect={() => undefined}
+                    onToggleEnabled={() => undefined}
+                    onDuplicate={() => undefined}
+                    onDelete={() => undefined}
+                  />
+                </ul>
+              ) : null}
+            </DragOverlay>
           </DndContext>
         )}
       </div>

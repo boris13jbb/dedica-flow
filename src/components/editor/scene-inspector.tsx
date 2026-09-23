@@ -12,14 +12,16 @@ import {
   ToggleField,
   SelectField,
 } from './fields'
+import { GalleryField, ImageField } from './media-fields'
 
 interface SceneInspectorProps {
   sceneType: SceneType
   config: Record<string, unknown>
+  projectId: string
   onChange: (config: Record<string, unknown>) => void
 }
 
-export function SceneInspector({ sceneType, config, onChange }: SceneInspectorProps) {
+export function SceneInspector({ sceneType, config, projectId, onChange }: SceneInspectorProps) {
   const definition = getSceneDefinition(sceneType)
 
   if (!definition) {
@@ -107,6 +109,28 @@ export function SceneInspector({ sceneType, config, onChange }: SceneInspectorPr
             key={field.key}
             field={field}
             value={value as string}
+            onChange={(v) => handleFieldChange(field.key, v)}
+          />
+        )
+
+      case 'image':
+        return (
+          <ImageField
+            key={field.key}
+            field={field}
+            projectId={projectId}
+            value={(value as string | null) ?? null}
+            onChange={(v) => handleFieldChange(field.key, v)}
+          />
+        )
+
+      case 'gallery':
+        return (
+          <GalleryField
+            key={field.key}
+            field={field}
+            projectId={projectId}
+            value={value}
             onChange={(v) => handleFieldChange(field.key, v)}
           />
         )

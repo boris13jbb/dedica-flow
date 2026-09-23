@@ -1,4 +1,10 @@
 import { create } from 'zustand'
+import {
+  insertSceneAfter,
+  remapScenePositions,
+  removeSceneAndSelectNeighbor,
+  reorderScenesByIds,
+} from '@/lib/scene-builder'
 import type { Project, Scene } from '@/types'
 
 interface EditorState {
@@ -25,6 +31,7 @@ interface EditorState {
   
   updateScene: (sceneId: string, updates: Partial<Scene>) => void
   addScene: (scene: Scene) => void
+  insertSceneAfter: (afterId: string, scene: Scene) => void
   removeScene: (sceneId: string) => void
   reorderScenes: (sceneIds: string[]) => void
   
@@ -72,30 +79,37 @@ export const useEditorStore = create<EditorState>((set) => ({
   
   addScene: (scene) =>
     set((state) => ({
-      scenes: [...state.scenes, scene],
+      scenes: remapScenePositions([...state.scenes, scene]),
+      selectedSceneId: scene.id,
+      isDirty: true,
+    })),
+
+  insertSceneAfter: (afterId, scene) =>
+    set((state) => ({
+      scenes: insertSceneAfter(state.scenes, afterId, scene),
+      selectedSceneId: scene.id,
       isDirty: true,
     })),
   
   removeScene: (sceneId) =>
-    set((state) => ({
-      scenes: state.scenes.filter((s) => s.id !== sceneId),
-      selectedSceneId: state.selectedSceneId === sceneId ? null : state.selectedSceneId,
-      isDirty: true,
-    })),
-  
-  reorderScenes: (sceneIds) =>
     set((state) => {
-      const sceneMap = new Map(state.scenes.map((s) => [s.id, s]))
-      const reordered = sceneIds
-        .map((id) => sceneMap.get(id))
-        .filter((s): s is Scene => s !== undefined)
-        .map((scene, index) => ({ ...scene, position: index }))
-      
+      const next = removeSceneAndSelectNeighbor(
+        state.scenes,
+        sceneId,
+        state.selectedSceneId
+      )
       return {
-        scenes: reordered,
+        scenes: next.scenes,
+        selectedSceneId: next.selectedId,
         isDirty: true,
       }
     }),
+  
+  reorderScenes: (sceneIds) =>
+    set((state) => ({
+      scenes: reorderScenesByIds(state.scenes, sceneIds),
+      isDirty: true,
+    })),
   
   setDirty: (dirty) => set({ isDirty: dirty }),
   setSaving: (saving) => set({ isSaving: saving }),

@@ -24,7 +24,35 @@ npm run test -- loader
 
 # Ejecutar tests de un archivo específico
 npm run test -- src/test/components/experience/loader.test.tsx
+
+# Smoke E2E (login/admin, sin autenticación destructiva)
+npm run test:e2e
+
+# Scene Builder autenticado — requiere entorno aislado
+npm run test:e2e:authenticated
 ```
+
+## E2E: smoke vs autenticado
+
+CI en PRs ejecuta **solo smoke**. Eso no cubre el Scene Builder.
+
+`npm run test:e2e:authenticated` falla de forma explícita si falta un entorno aislado:
+
+- `E2E_ISOLATED=1`
+- `E2E_EMAIL` / `E2E_PASSWORD` de un usuario de pruebas (nunca admin de producción)
+- `E2E_PROJECT_ID` / `E2E_PROJECT_SLUG` de un proyecto de pruebas (se rechaza `mayrita`)
+- backend de test/staging (`NEXT_PUBLIC_SUPABASE_*` de ese entorno)
+
+Los tests del Builder crean, reordenan y borran escenas, y pueden subir media. Deben restaurar el fixture con `try/finally`.
+
+**Duplicar proyecto:** la app no tiene UI de eliminación de proyectos. El E2E real de duplicación solo corre con `E2E_ALLOW_PROJECT_MUTATIONS=1` y `SUPABASE_SERVICE_ROLE_KEY` del entorno de test, para borrar el clon. Sin eso, el flujo destructivo queda fuera de CI.
+
+Mensaje oficial: `Authenticated E2E requires isolated test environment`.
+No contar tests skipped como E2E ejecutados.
+
+El backend aislado se llama `dedica-flow-e2e` (proyecto Supabase distinto de producción).
+Localmente la suite autenticada lee `.env.e2e` (gitignorado), nunca `.env.local`.
+La service role solo vive en GitHub Secrets / `.env.e2e` y en `src/lib/supabase/admin.ts` (servidor). Nunca `NEXT_PUBLIC_`.
 
 ## 📁 Estructura de Tests
 
