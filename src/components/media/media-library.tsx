@@ -13,7 +13,7 @@ import { mediaConfig } from '@/config'
 import { formatFileSize } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-interface Asset {
+export interface MediaAsset {
   id: string
   type: 'image' | 'audio' | 'video'
   original_name: string
@@ -25,12 +25,18 @@ interface Asset {
 
 interface MediaLibraryProps {
   projectId: string
-  assets: Asset[]
-  onAssetSelect?: (asset: Asset) => void
+  assets: MediaAsset[]
+  onAssetSelect?: (asset: MediaAsset) => void
   onRefresh?: () => void
   filterType?: 'image' | 'audio' | 'video' | 'all'
   /** Si true, muestra tabs Todos/Imágenes/Videos/Audios (solo cuando filterType=all) */
   showTabs?: boolean
+  /** Selección visual para MediaPicker; no sustituye onAssetSelect del panel de audio. */
+  selectionMode?: 'none' | 'single' | 'multiple'
+  selectedUrls?: string[]
+  onToggleUrl?: (url: string) => void
+  hideDelete?: boolean
+  searchQuery?: string
 }
 
 export function MediaLibrary({
@@ -40,6 +46,11 @@ export function MediaLibrary({
   onRefresh,
   filterType = 'all',
   showTabs = false,
+  selectionMode = 'none',
+  selectedUrls = [],
+  onToggleUrl,
+  hideDelete = false,
+  searchQuery = '',
 }: MediaLibraryProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
@@ -51,13 +62,13 @@ export function MediaLibrary({
 
   const activeFilter = filterType !== 'all' ? filterType : tab
 
-  const filteredAssets = useMemo(
-    () =>
-      activeFilter === 'all'
-        ? assets
-        : assets.filter((a) => a.type === activeFilter),
-    [assets, activeFilter]
-  )
+  const filteredAssets = useMemo(() => {
+    const byType =
+      activeFilter === 'all' ? assets : assets.filter((a) => a.type === activeFilter)
+    const query = searchQuery.trim().toLowerCase()
+    if (!query) return byType
+    return byType.filter((asset) => asset.original_name.toLowerCase().includes(query))
+  }, [assets, activeFilter, searchQuery])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -221,7 +232,12 @@ export function MediaLibrary({
           {filteredAssets.map((asset) => (
             <Card
               key={asset.id}
-              className="group relative overflow-hidden bg-df-surface shadow-none transition-colors hover:border-df-border-hover"
+              className={cn(
+                'group relative overflow-hidden bg-df-surface shadow-none transition-colors hover:border-df-border-hover',
+                selectionMode !== 'none' &&
+                  selectedUrls.includes(asset.url) &&
+                  'border-df-primary/50 ring-1 ring-df-primary/40'
+              )}
             >
               <div className="relative flex aspect-[4/3] items-center justify-center bg-df-bg">
                 {asset.type === 'image' ? (
@@ -247,7 +263,19 @@ export function MediaLibrary({
               </div>
 
               <div className="absolute right-2 top-2 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-                {onAssetSelect && (
+                {selectionMode !== 'none' && onToggleUrl && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={selectedUrls.includes(asset.url) ? 'secondary' : 'primary'}
+                    onClick={() => onToggleUrl(asset.url)}
+                    className="h-7 px-2 text-xs"
+                    data-testid={`media-select-${asset.id}`}
+                  >
+                    {selectedUrls.includes(asset.url) ? 'Quitar' : 'Elegir'}
+                  </Button>
+                )}
+                {onAssetSelect && selectionMode === 'none' && (
                   <Button
                     type="button"
                     size="sm"
@@ -258,16 +286,18 @@ export function MediaLibrary({
                     Usar
                   </Button>
                 )}
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => setDeleteId(asset.id)}
-                  aria-label="Eliminar archivo"
-                  className="h-7 w-7 text-df-muted hover:text-df-error"
-                >
-                  <Trash2 className="size-3" />
-                </Button>
+                {!hideDelete && (
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => setDeleteId(asset.id)}
+                    aria-label="Eliminar archivo"
+                    className="h-7 w-7 text-df-muted hover:text-df-error"
+                  >
+                    <Trash2 className="size-3" />
+                  </Button>
+                )}
               </div>
             </Card>
           ))}

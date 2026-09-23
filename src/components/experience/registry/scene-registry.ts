@@ -316,9 +316,10 @@ export const flowersSceneDefinition: SceneDefinition<FlowersSceneConfig> = {
     },
     {
       key: 'flowerImage',
-      label: 'URL de imagen',
-      type: 'text',
+      label: 'Imagen de flor',
+      type: 'image',
       placeholder: 'https://...',
+      description: 'Selecciona una imagen de Biblioteca o, si lo necesitas, pega una URL directa.',
     },
     {
       key: 'amount',
@@ -393,11 +394,11 @@ export const photoOrbitSceneDefinition: SceneDefinition<PhotoOrbitSceneConfig> =
   fields: [
     {
       key: 'photos',
-      label: 'URLs de fotos (una por línea)',
-      type: 'textarea',
+      label: 'Fotos de la órbita',
+      type: 'gallery',
       placeholder: 'https://ejemplo.com/foto.jpg',
       description:
-        'Usa URLs directas de imagen (.jpg, .png, .webp) o archivos de Biblioteca. Los álbumes de Google Photos (photos.app.goo.gl) no funcionan.',
+        'Selecciona fotos de Biblioteca. Los álbumes de Google Photos (photos.app.goo.gl) no funcionan y se omiten en público.',
     },
     {
       key: 'radius',
